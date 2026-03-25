@@ -32,6 +32,7 @@ class User extends Authenticatable implements LaratrustUser
         'organization_license',
         'rejection_reason',
         'locale',
+        'points',
     ];
 
     protected $hidden = [
@@ -42,7 +43,10 @@ class User extends Authenticatable implements LaratrustUser
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'points' => 'integer',
     ];
+
+    protected $appends = ['average_rating'];
 
     // ── Relationships ──
 
@@ -103,5 +107,35 @@ class User extends Authenticatable implements LaratrustUser
     public function getAvatarUrlAttribute(): ?string
     {
         return $this->avatar ? asset('storage/' . $this->avatar) : null;
+    }
+
+    public function getAverageRatingAttribute(): float
+    {
+        return round((float) $this->ratingsReceived()->avg('rating'), 1);
+    }
+
+    public function addPoints(int $amount): void
+    {
+        $this->increment('points', $amount);
+    }
+
+    public function getPointsLevel(): string
+    {
+        return match (true) {
+            $this->points >= 500 => 'Gold',
+            $this->points >= 200 => 'Silver',
+            $this->points >= 50  => 'Bronze',
+            default              => 'Starter',
+        };
+    }
+
+    public function getPointsLevelColor(): string
+    {
+        return match ($this->getPointsLevel()) {
+            'Gold'   => 'warning',
+            'Silver' => 'secondary',
+            'Bronze' => 'info',
+            default  => 'light',
+        };
     }
 }

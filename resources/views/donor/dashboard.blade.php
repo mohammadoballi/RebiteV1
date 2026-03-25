@@ -68,11 +68,11 @@
         <div class="card h-100">
             <div class="card-body d-flex align-items-center">
                 <div class="rounded-circle bg-info bg-opacity-10 p-3 me-3">
-                    <i class="fas fa-thumbs-up fa-lg text-info"></i>
+                    <i class="fas fa-coins fa-lg text-info"></i>
                 </div>
                 <div>
-                    <h3 class="mb-0">{{ $acceptedCount ?? 0 }}</h3>
-                    <small class="text-muted">{{ __('donations.accepted') }}</small>
+                    <h3 class="mb-0">{{ auth()->user()->points ?? 0 }}</h3>
+                    <small class="text-muted">{{ __('Points') }} · <span class="badge bg-{{ auth()->user()->getPointsLevelColor() }}">{{ auth()->user()->getPointsLevel() }}</span></small>
                 </div>
             </div>
         </div>

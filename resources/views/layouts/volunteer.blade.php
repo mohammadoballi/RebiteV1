@@ -121,9 +121,17 @@
            href="{{ route('volunteer.dashboard') }}">
             <i class="fas fa-tachometer-alt"></i> {{ __('general.dashboard') }}
         </a>
+        <a class="nav-link {{ request()->routeIs('volunteer.donations.*') ? 'active' : '' }}"
+           href="{{ route('volunteer.donations.index') }}">
+            <i class="fas fa-store"></i> {{ __('Browse Donations') }}
+        </a>
         <a class="nav-link {{ request()->routeIs('volunteer.assignments.*') ? 'active' : '' }}"
            href="{{ route('volunteer.assignments.index') }}">
             <i class="fas fa-truck"></i> {{ __('My Assignments') }}
+        </a>
+        <a class="nav-link {{ request()->routeIs('volunteer.ratings') ? 'active' : '' }}"
+           href="{{ route('volunteer.ratings') }}">
+            <i class="fas fa-star"></i> {{ __('My Ratings') }}
         </a>
         <a class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}"
            href="{{ route('profile.show') }}">

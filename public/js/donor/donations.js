@@ -207,6 +207,28 @@ $(document).ready(function() {
                 modal.find('#view-image-container').hide();
             }
 
+            // Show assigned volunteers with rate buttons
+            if (data.assignments && data.assignments.length > 0) {
+                let volHtml = '';
+                data.assignments.forEach(function(a) {
+                    if (a.volunteer) {
+                        volHtml += '<div class="d-flex justify-content-between align-items-center border-bottom py-2">';
+                        volHtml += '<div>';
+                        volHtml += '<i class="fas fa-user-circle text-success me-1"></i> ';
+                        volHtml += '<strong>' + a.volunteer.name + '</strong>';
+                        volHtml += ' <span class="badge bg-' + (a.status === 'completed' ? 'success' : 'info') + ' ms-1">' + a.status + '</span>';
+                        volHtml += '</div>';
+                        volHtml += '<button class="btn btn-sm btn-outline-warning" onclick="openRateModal(' + a.volunteer.id + ', \'' + a.volunteer.name.replace(/'/g, "\\'") + '\')">';
+                        volHtml += '<i class="fas fa-star me-1"></i> Rate</button>';
+                        volHtml += '</div>';
+                    }
+                });
+                modal.find('#view-volunteers-list').html(volHtml);
+                modal.find('#view-volunteers-section').show();
+            } else {
+                modal.find('#view-volunteers-section').hide();
+            }
+
             modal.modal('show');
         });
     });

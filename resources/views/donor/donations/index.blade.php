@@ -150,6 +150,11 @@
                     <div class="col-12" id="view-image-container" style="display:none">
                         <img id="view-image" src="" class="img-fluid rounded" style="max-height: 250px;">
                     </div>
+                    <div class="col-12" id="view-volunteers-section" style="display:none">
+                        <hr>
+                        <h6 class="fw-bold"><i class="fas fa-users me-1 text-success"></i> {{ __('Assigned Volunteers') }}</h6>
+                        <div id="view-volunteers-list"></div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -158,6 +163,8 @@
         </div>
     </div>
 </div>
+
+@include('components.rate-volunteer-modal')
 @endsection
 
 @push('scripts')

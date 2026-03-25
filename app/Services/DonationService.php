@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Donation;
 use App\Models\DonationItem;
+use App\Models\User;
 use App\Repositories\DonationRepository;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
@@ -33,6 +34,12 @@ class DonationService
 
             foreach ($items as $item) {
                 $donation->items()->create($item);
+            }
+
+            // Award donor 10 points per donation + 2 per item
+            if (isset($data['user_id'])) {
+                $donor = User::find($data['user_id']);
+                $donor?->addPoints(10 + (count($items) * 2));
             }
 
             return $donation->load('items');

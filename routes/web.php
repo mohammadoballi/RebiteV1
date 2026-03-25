@@ -17,6 +17,8 @@ use App\Http\Controllers\Charity\DashboardController as CharityDashboardControll
 use App\Http\Controllers\Charity\DonationController as CharityDonationController;
 use App\Http\Controllers\Volunteer\DashboardController as VolunteerDashboardController;
 use App\Http\Controllers\Volunteer\AssignmentController;
+use App\Http\Controllers\Volunteer\DonationController as VolunteerDonationController;
+use App\Http\Controllers\RatingController;
 
 // Landing Page
 Route::get('/', function () {
@@ -120,9 +122,19 @@ Route::middleware(['auth', 'approved'])->group(function () {
         Route::get('my-requests/datatable', [CharityDonationController::class, 'myRequestsDatatable'])->name('my-requests.datatable');
     });
 
+    // Rating Routes (for donor & charity to rate volunteers)
+    Route::post('ratings', [RatingController::class, 'store'])->name('ratings.store');
+    Route::get('my-ratings', [RatingController::class, 'myRatings'])->name('ratings.my');
+
     // Volunteer Routes
     Route::middleware('role:volunteer')->prefix('volunteer')->name('volunteer.')->group(function () {
         Route::get('dashboard', [VolunteerDashboardController::class, 'index'])->name('dashboard');
+
+        Route::prefix('donations')->name('donations.')->group(function () {
+            Route::get('/', [VolunteerDonationController::class, 'index'])->name('index');
+            Route::get('{id}', [VolunteerDonationController::class, 'show'])->name('show');
+            Route::post('{id}/assign', [VolunteerDonationController::class, 'selfAssign'])->name('assign');
+        });
 
         Route::prefix('assignments')->name('assignments.')->group(function () {
             Route::get('/', [AssignmentController::class, 'index'])->name('index');
@@ -133,5 +145,9 @@ Route::middleware(['auth', 'approved'])->group(function () {
             Route::post('{id}/pickup', [AssignmentController::class, 'markPickedUp'])->name('pickup');
             Route::post('{id}/deliver', [AssignmentController::class, 'markDelivered'])->name('deliver');
         });
+
+        Route::get('my-ratings', function () {
+            return view('volunteer.ratings.index');
+        })->name('ratings');
     });
 });

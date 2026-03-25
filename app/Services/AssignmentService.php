@@ -58,17 +58,32 @@ class AssignmentService
 
     public function markPickedUp(int $id): bool
     {
-        return $this->assignmentRepository->update($id, [
+        $assignment = $this->assignmentRepository->findOrFail($id);
+        $result = $this->assignmentRepository->update($id, [
             'status' => 'in_progress',
             'pickup_at' => now(),
         ]);
+
+        if ($result && $assignment->volunteer_id) {
+            User::find($assignment->volunteer_id)?->addPoints(5);
+        }
+
+        return $result;
     }
 
     public function markDelivered(int $id): bool
     {
-        return $this->assignmentRepository->update($id, [
+        $assignment = $this->assignmentRepository->findOrFail($id);
+        $result = $this->assignmentRepository->update($id, [
             'status' => 'completed',
             'delivered_at' => now(),
         ]);
+
+        if ($result && $assignment->volunteer_id) {
+            $volunteer = User::find($assignment->volunteer_id);
+            $volunteer?->addPoints(25);
+        }
+
+        return $result;
     }
 }

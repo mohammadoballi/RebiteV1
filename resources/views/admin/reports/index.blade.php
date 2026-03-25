@@ -276,7 +276,8 @@
                             <tr>
                                 <th>#</th>
                                 <th>{{ __('users.name') }}</th>
-                                <th class="text-center">{{ __('Type') }}</th>
+                                <th class="text-center"><i class="fas fa-star text-warning"></i></th>
+                                <th class="text-center"><i class="fas fa-coins" style="color:#0dcaf0"></i></th>
                                 <th class="text-center">{{ __('donations.completed') }}</th>
                             </tr>
                         </thead>
@@ -290,19 +291,103 @@
                                         {{ $i + 1 }}
                                     @endif
                                 </td>
-                                <td><strong>{{ $vol['name'] }}</strong></td>
-                                <td class="text-center">
-                                    <span class="badge bg-{{ $vol['role_type'] === 'delivery' ? 'info' : 'secondary' }}">
-                                        {{ ucfirst($vol['role_type'] ?? '-') }}
-                                    </span>
+                                <td>
+                                    <strong>{{ $vol['name'] }}</strong>
+                                    <br><span class="badge bg-{{ ($vol['role_type'] ?? '') === 'delivery' ? 'info' : 'secondary' }} small">{{ ucfirst($vol['role_type'] ?? '-') }}</span>
                                 </td>
+                                <td class="text-center">
+                                    <span class="text-warning fw-bold">{{ $vol['avg_rating'] ?? '0.0' }}</span>
+                                    <br><small class="text-muted">{{ $vol['ratings_count'] ?? 0 }} reviews</small>
+                                </td>
+                                <td class="text-center"><span class="badge bg-info">{{ $vol['points'] ?? 0 }}</span></td>
                                 <td class="text-center"><span class="badge bg-success">{{ $vol['completed_count'] }}</span></td>
+                            </tr>
+                            @empty
+                            <tr><td colspan="5" class="text-center text-muted py-3">{{ __('general.no_data') }}</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{-- Donor Points Leaderboard --}}
+<div class="row g-3 mb-4">
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold border-0">
+                <i class="fas fa-coins text-warning me-1"></i> {{ __('Top Donors by Points') }}
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>{{ __('users.name') }}</th>
+                                <th class="text-center"><i class="fas fa-coins" style="color:#0dcaf0"></i> {{ __('Points') }}</th>
+                                <th class="text-center">{{ __('donations.title') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($data['top_donors_by_points'] as $i => $donor)
+                            <tr>
+                                <td>
+                                    @if($i < 3)
+                                        <span class="badge bg-{{ ['warning','secondary','info'][$i] }} rounded-pill">{{ $i + 1 }}</span>
+                                    @else
+                                        {{ $i + 1 }}
+                                    @endif
+                                </td>
+                                <td>
+                                    <strong>{{ $donor['name'] }}</strong>
+                                    @if($donor['city'])
+                                        <br><small class="text-muted">{{ $donor['city'] }}</small>
+                                    @endif
+                                </td>
+                                <td class="text-center"><span class="badge bg-info">{{ $donor['points'] ?? 0 }}</span></td>
+                                <td class="text-center"><span class="badge bg-success">{{ $donor['donations_count'] }}</span></td>
                             </tr>
                             @empty
                             <tr><td colspan="4" class="text-center text-muted py-3">{{ __('general.no_data') }}</td></tr>
                             @endforelse
                         </tbody>
                     </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold border-0">
+                <i class="fas fa-star text-warning me-1"></i> {{ __('Rating Overview') }}
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="display-3 fw-bold text-warning">{{ $data['average_rating'] }}</div>
+                    <div>
+                        @for($s = 1; $s <= 5; $s++)
+                            <i class="fas fa-star {{ $s <= round($data['average_rating']) ? 'text-warning' : 'text-muted' }} fa-lg"></i>
+                        @endfor
+                    </div>
+                    <small class="text-muted">{{ __('System Average Rating') }}</small>
+                </div>
+                <hr>
+                <div class="row text-center">
+                    <div class="col-4">
+                        <h4 class="fw-bold text-success mb-0">{{ collect($data['top_volunteers'])->sum('ratings_count') }}</h4>
+                        <small class="text-muted">{{ __('Total Reviews') }}</small>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="fw-bold text-info mb-0">{{ collect($data['top_volunteers'])->sum('points') }}</h4>
+                        <small class="text-muted">{{ __('Total Volunteer Points') }}</small>
+                    </div>
+                    <div class="col-4">
+                        <h4 class="fw-bold text-warning mb-0">{{ collect($data['top_donors_by_points'])->sum('points') }}</h4>
+                        <small class="text-muted">{{ __('Total Donor Points') }}</small>
+                    </div>
                 </div>
             </div>
         </div>

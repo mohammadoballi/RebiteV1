@@ -262,37 +262,52 @@ class DatabaseSeeder extends Seeder
             ]);
         }
 
-        // ── Ratings (50) ──
+        // ── Ratings (for volunteers from donors & charities) ──
         $ratingComments = [
             'Excellent service!', 'Very professional and on time.',
-            'Great quality food, thank you!', 'Smooth experience overall.',
-            'Could be better with packaging.', 'Fast delivery, appreciated!',
-            'Food was fresh and well-packed.', 'Thank you for helping our community.',
+            'Smooth experience overall.', 'Fast delivery, appreciated!',
+            'Great volunteer, highly recommend.', 'Handled food with care.',
+            'Punctual and reliable.', 'Thank you for helping our community.',
+            'Could improve communication.', 'Outstanding effort!',
             null, null,
         ];
 
-        for ($i = 0; $i < 50; $i++) {
-            $raterPool = array_merge($donors, $charities, $volunteers);
-            $rater = $raterPool[array_rand($raterPool)];
-
-            $rateableType = ['App\\Models\\Donation', 'App\\Models\\User'][array_rand([0, 1])];
-
-            if ($rateableType === 'App\\Models\\Donation') {
-                $rateable = $donations[array_rand($donations)];
-            } else {
-                $rateable = $raterPool[array_rand($raterPool)];
-                if ($rateable->id === $rater->id) continue;
+        $raterPool = array_merge($donors, $charities);
+        foreach ($volunteers as $vol) {
+            $numRatings = rand(2, 6);
+            $usedRaters = [];
+            for ($j = 0; $j < $numRatings; $j++) {
+                $rater = $raterPool[array_rand($raterPool)];
+                if (in_array($rater->id, $usedRaters)) continue;
+                $usedRaters[] = $rater->id;
+                Rating::create([
+                    'rater_id' => $rater->id,
+                    'rateable_id' => $vol->id,
+                    'rateable_type' => User::class,
+                    'rating' => rand(3, 5),
+                    'comment' => $ratingComments[array_rand($ratingComments)],
+                ]);
             }
-
-            Rating::create([
-                'rater_id' => $rater->id,
-                'rateable_id' => $rateable->id,
-                'rateable_type' => $rateableType,
-                'rating' => rand(3, 5),
-                'comment' => $ratingComments[array_rand($ratingComments)],
-            ]);
         }
 
-        $this->command->info('Seeded: 1 admin, 18 donors (15 approved + 3 pending), 10 charities, 22 volunteers (20 approved + 2 pending), 60 donations with items, ~80 requests, 40 assignments, 50 ratings.');
+        // ── Award points ──
+        // Donors: 10 per donation + 2 per item
+        foreach ($donors as $d) {
+            $donationCount = Donation::where('user_id', $d->id)->count();
+            $itemCount = DonationItem::whereHas('donation', fn($q) => $q->where('user_id', $d->id))->count();
+            $d->update(['points' => ($donationCount * 10) + ($itemCount * 2)]);
+        }
+
+        // Volunteers: based on assignment statuses
+        foreach ($volunteers as $vol) {
+            $completedCount = DonationAssignment::where('volunteer_id', $vol->id)->where('status', 'completed')->count();
+            $inProgressCount = DonationAssignment::where('volunteer_id', $vol->id)->where('status', 'in_progress')->count();
+            $acceptedCount = DonationAssignment::where('volunteer_id', $vol->id)->where('status', 'accepted')->count();
+            $ratingsCount = Rating::where('rateable_id', $vol->id)->where('rateable_type', User::class)->count();
+            $points = ($completedCount * 25) + ($inProgressCount * 5) + ($acceptedCount * 5) + ($ratingsCount * 3);
+            $vol->update(['points' => $points]);
+        }
+
+        $this->command->info('Seeded: 1 admin, 18 donors (15+3 pending), 10 charities, 22 volunteers (20+2 pending), 60 donations, ~80 requests, 40 assignments, ratings & points.');
     }
 }

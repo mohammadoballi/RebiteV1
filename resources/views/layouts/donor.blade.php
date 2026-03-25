@@ -125,10 +125,6 @@
            href="{{ route('donor.donations.index') }}">
             <i class="fas fa-gift"></i> {{ __('My Donations') }}
         </a>
-        <a class="nav-link {{ request()->routeIs('donor.donations.create') ? 'active' : '' }}"
-           href="{{ route('donor.donations.index') }}#add">
-            <i class="fas fa-plus-circle"></i> {{ __('Add Donation') }}
-        </a>
         <a class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}"
            href="{{ route('profile.show') }}">
             <i class="fas fa-user"></i> {{ __('Profile') }}

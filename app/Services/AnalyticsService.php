@@ -144,12 +144,27 @@ class AnalyticsService
 
     public function getTopVolunteers(int $limit = 10): array
     {
-        return User::select('users.id', 'users.name', 'users.role_type')
+        return User::select('users.id', 'users.name', 'users.role_type', 'users.points')
             ->selectRaw('COUNT(donation_assignments.id) as assignments_count')
             ->selectRaw('SUM(CASE WHEN donation_assignments.status = "completed" THEN 1 ELSE 0 END) as completed_count')
+            ->selectRaw('(SELECT ROUND(AVG(r.rating), 1) FROM ratings r WHERE r.rateable_id = users.id AND r.rateable_type = "App\\\\Models\\\\User") as avg_rating')
+            ->selectRaw('(SELECT COUNT(*) FROM ratings r WHERE r.rateable_id = users.id AND r.rateable_type = "App\\\\Models\\\\User") as ratings_count')
             ->join('donation_assignments', 'donation_assignments.volunteer_id', '=', 'users.id')
-            ->groupBy('users.id', 'users.name', 'users.role_type')
+            ->groupBy('users.id', 'users.name', 'users.role_type', 'users.points')
             ->orderByDesc('completed_count')
+            ->limit($limit)
+            ->get()
+            ->toArray();
+    }
+
+    public function getTopDonorsByPoints(int $limit = 10): array
+    {
+        return User::select('users.id', 'users.name', 'users.city', 'users.points')
+            ->selectRaw('COUNT(donations.id) as donations_count')
+            ->join('donations', 'donations.user_id', '=', 'users.id')
+            ->where('donations.deleted_at', null)
+            ->groupBy('users.id', 'users.name', 'users.city', 'users.points')
+            ->orderByDesc('users.points')
             ->limit($limit)
             ->get()
             ->toArray();
@@ -203,6 +218,7 @@ class AnalyticsService
             'users_by_role' => $this->getUsersByRole(),
             'donations_by_status' => $this->getDonationsByStatus(),
             'top_donors' => $this->getTopDonors(),
+            'top_donors_by_points' => $this->getTopDonorsByPoints(),
             'top_charities' => $this->getTopCharities(),
             'top_volunteers' => $this->getTopVolunteers(),
             'average_rating' => $this->getAverageRating(),

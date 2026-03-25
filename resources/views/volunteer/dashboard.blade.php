@@ -38,9 +38,59 @@
     </div>
 </div>
 
+{{-- Points & Rating Row --}}
+<div class="row g-3 mb-4">
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:56px;height:56px;background:rgba(13,202,240,.12)">
+                    <i class="fas fa-coins fa-lg" style="color:#0dcaf0"></i>
+                </div>
+                <h2 class="fw-bold mb-0">{{ $user->points }}</h2>
+                <small class="text-muted">{{ __('Points') }}</small>
+                <div class="mt-2">
+                    <span class="badge bg-{{ $user->getPointsLevelColor() }} fs-6">{{ $user->getPointsLevel() }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:56px;height:56px;background:rgba(255,193,7,.12)">
+                    <i class="fas fa-star fa-lg text-warning"></i>
+                </div>
+                <h2 class="fw-bold mb-0">{{ $user->average_rating }}</h2>
+                <small class="text-muted">{{ __('Average Rating') }}</small>
+                <div class="mt-2">
+                    @for($s = 1; $s <= 5; $s++)
+                        <i class="fas fa-star {{ $s <= round($user->average_rating) ? 'text-warning' : 'text-muted' }}"></i>
+                    @endfor
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+                <div class="rounded-circle d-inline-flex align-items-center justify-content-center mb-2" style="width:56px;height:56px;background:rgba(25,135,84,.1)">
+                    <i class="fas fa-check-double fa-lg text-success"></i>
+                </div>
+                <h2 class="fw-bold mb-0">{{ $completedCount }}</h2>
+                <small class="text-muted">{{ __('Completed') }}</small>
+                <div class="mt-2">
+                    <a href="{{ route('volunteer.ratings') }}" class="btn btn-sm btn-outline-warning">
+                        <i class="fas fa-star me-1"></i>{{ __('My Ratings') }}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 {{-- Stat Cards --}}
 <div class="row g-3 mb-4">
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl-4 col-md-6">
         <div class="card h-100">
             <div class="card-body d-flex align-items-center">
                 <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 56px; height: 56px; background: rgba(25,135,84,.1);">
@@ -53,7 +103,7 @@
             </div>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl-4 col-md-6">
         <div class="card h-100">
             <div class="card-body d-flex align-items-center">
                 <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 56px; height: 56px; background: rgba(255,193,7,.1);">
@@ -66,7 +116,7 @@
             </div>
         </div>
     </div>
-    <div class="col-xl-3 col-md-6">
+    <div class="col-xl-4 col-md-6">
         <div class="card h-100">
             <div class="card-body d-flex align-items-center">
                 <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 56px; height: 56px; background: rgba(13,110,253,.1);">
@@ -75,19 +125,6 @@
                 <div>
                     <h3 class="mb-0 fw-bold text-primary">{{ $inProgressCount }}</h3>
                     <small class="text-muted">{{ __('In Progress') }}</small>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div class="col-xl-3 col-md-6">
-        <div class="card h-100">
-            <div class="card-body d-flex align-items-center">
-                <div class="rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 56px; height: 56px; background: rgba(32,201,151,.1);">
-                    <i class="fas fa-check-double fa-lg" style="color: #20c997;"></i>
-                </div>
-                <div>
-                    <h3 class="mb-0 fw-bold" style="color: #20c997;">{{ $completedCount }}</h3>
-                    <small class="text-muted">{{ __('Completed') }}</small>
                 </div>
             </div>
         </div>
