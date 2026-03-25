@@ -1,0 +1,74 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\DonationAssignment;
+use App\Models\Role;
+use App\Models\User;
+use App\Repositories\DonationAssignmentRepository;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+
+class AssignmentService
+{
+    public function __construct(
+        protected DonationAssignmentRepository $assignmentRepository
+    ) {}
+
+    public function assignVolunteer(int $donationId, int $volunteerId, string $type): Model
+    {
+        return $this->assignmentRepository->assignVolunteer($donationId, $volunteerId, $type);
+    }
+
+    public function autoAssign(int $donationId): Model
+    {
+        $volunteer = User::whereHas('roles', fn ($q) => $q->where('name', Role::VOLUNTEER))
+            ->where('status', User::STATUS_APPROVED)
+            ->where('role_type', 'delivery')
+            ->whereDoesntHave('assignments', function ($q) {
+                $q->whereIn('status', ['pending', 'accepted', 'in_progress']);
+            })
+            ->first();
+
+        if ($volunteer) {
+            return $this->assignmentRepository->assignVolunteer(
+                $donationId,
+                $volunteer->id,
+                'delivery'
+            );
+        }
+
+        return $this->assignmentRepository->create([
+            'donation_id' => $donationId,
+            'assignment_type' => 'delivery',
+            'status' => 'pending',
+            'is_external_delivery' => true,
+        ]);
+    }
+
+    public function updateStatus(int $id, string $status): bool
+    {
+        return $this->assignmentRepository->update($id, ['status' => $status]);
+    }
+
+    public function getByVolunteer(int $volunteerId): Collection
+    {
+        return $this->assignmentRepository->getByVolunteer($volunteerId);
+    }
+
+    public function markPickedUp(int $id): bool
+    {
+        return $this->assignmentRepository->update($id, [
+            'status' => 'in_progress',
+            'pickup_at' => now(),
+        ]);
+    }
+
+    public function markDelivered(int $id): bool
+    {
+        return $this->assignmentRepository->update($id, [
+            'status' => 'completed',
+            'delivered_at' => now(),
+        ]);
+    }
+}
