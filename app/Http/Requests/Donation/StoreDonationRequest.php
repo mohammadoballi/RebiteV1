@@ -14,6 +14,8 @@ class StoreDonationRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'city_id'           => ['nullable', 'exists:cities,id'],
+            'town_id'           => ['nullable', 'exists:towns,id'],
             'description'       => ['nullable', 'string'],
             'pickup_address'    => ['required', 'string'],
             'latitude'          => ['nullable', 'numeric'],

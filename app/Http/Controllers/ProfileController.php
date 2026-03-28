@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\Profile\ChangePasswordRequest;
 use App\Http\Requests\Profile\UpdateProfileRequest;
+use App\Models\City;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 
@@ -15,7 +16,12 @@ class ProfileController extends Controller
 
     public function show()
     {
-        return view('profile.show', ['user' => auth()->user()]);
+        $cities = City::orderBy('name')->get();
+
+        return view('profile.show', [
+            'user'   => auth()->user(),
+            'cities' => $cities,
+        ]);
     }
 
     public function update(UpdateProfileRequest $request)

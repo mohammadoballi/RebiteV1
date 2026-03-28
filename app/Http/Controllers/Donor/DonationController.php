@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Donor;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Donation\StoreDonationRequest;
 use App\Http\Requests\Donation\UpdateDonationRequest;
+use App\Models\City;
 use App\Models\Donation;
 use App\Services\DonationService;
 use Illuminate\Http\JsonResponse;
@@ -18,7 +19,9 @@ class DonationController extends Controller
 
     public function index()
     {
-        return view('donor.donations.index');
+        $cities = City::orderBy('name')->get();
+
+        return view('donor.donations.index', compact('cities'));
     }
 
     public function datatable(): JsonResponse
@@ -66,7 +69,7 @@ class DonationController extends Controller
     public function show(int $id): JsonResponse
     {
         $donation = Donation::where('user_id', auth()->id())
-            ->with(['items', 'requests.charity', 'assignments.volunteer'])
+            ->with(['items', 'requests.charity', 'assignments.volunteer', 'cityRelation:id,name', 'town:id,name'])
             ->findOrFail($id);
 
         return response()->json($donation);

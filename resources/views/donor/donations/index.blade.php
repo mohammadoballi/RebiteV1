@@ -58,6 +58,23 @@
                             <textarea class="form-control" id="description" name="description" rows="2" placeholder="{{ __('General description of the donation...') }}"></textarea>
                         </div>
 
+                        <div class="col-md-6">
+                            <label for="donation_city_id" class="form-label">{{ __('City') }}</label>
+                            <select class="form-select" id="donation_city_id" name="city_id">
+                                <option value="">{{ __('Select City') }}</option>
+                                @foreach($cities as $city)
+                                    <option value="{{ $city->id }}">{{ $city->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label for="donation_town_id" class="form-label">{{ __('Town') }}</label>
+                            <select class="form-select" id="donation_town_id" name="town_id">
+                                <option value="">{{ __('Select Town') }}</option>
+                            </select>
+                        </div>
+
                         <div class="col-md-8">
                             <label for="pickup_address" class="form-label">{{ __('donations.pickup_address') }} <span class="text-danger">*</span></label>
                             <textarea class="form-control" id="pickup_address" name="pickup_address" rows="2" required></textarea>

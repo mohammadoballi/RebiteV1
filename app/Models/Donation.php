@@ -20,6 +20,8 @@ class Donation extends Model
 
     protected $fillable = [
         'user_id',
+        'city_id',
+        'town_id',
         'food_type',
         'description',
         'quantity',
@@ -50,6 +52,16 @@ class Donation extends Model
     public function donor()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function cityRelation()
+    {
+        return $this->belongsTo(City::class, 'city_id');
+    }
+
+    public function town()
+    {
+        return $this->belongsTo(Town::class, 'town_id');
     }
 
     public function items()

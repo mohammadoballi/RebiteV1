@@ -25,6 +25,9 @@ class RegisterRequest extends FormRequest
             'organization_license' => ['required_if:role,charity', 'file', 'mimes:pdf,jpg,png', 'max:5120'],
             'address'              => ['nullable', 'string'],
             'city'                 => ['nullable', 'string'],
+            'city_id'              => ['nullable', 'exists:cities,id'],
+            'town_id'              => ['nullable', 'exists:towns,id'],
+            'safety_guidelines'    => ['required', 'accepted'],
         ];
     }
 }

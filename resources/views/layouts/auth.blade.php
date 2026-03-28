@@ -12,32 +12,56 @@
     @else
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     @endif
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --rb-primary: #28a745;
-            --rb-secondary: #20c997;
+            --rb-green: #3a7d44;
+            --rb-green-dark: #2d5f34;
+            --rb-orange: #d4892a;
+            --rb-cream: #faf7f2;
+            --rb-dark: #2d3e30;
         }
 
         body {
             min-height: 100vh;
-            background: linear-gradient(135deg, #28a745 0%, #20c997 50%, #e8f5e9 100%);
+            background-image: url('{{ asset("images/Background-landing.png") }}');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: rgba(255,255,255,.3);
+            z-index: 0;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', Georgia, serif;
         }
 
         .auth-wrapper {
             width: 100%;
-            max-width: 500px;
+            max-width: 480px;
             padding: 1rem;
+            position: relative;
+            z-index: 1;
         }
 
         .auth-card {
-            background: #fff;
-            border-radius: 1rem;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, .15);
+            background: rgba(255,255,255,.93);
+            backdrop-filter: blur(10px);
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,.1);
             overflow: hidden;
         }
 
@@ -55,35 +79,31 @@
         }
 
         .auth-logo .logo-fallback {
+            font-family: 'Playfair Display', serif;
             font-size: 2rem;
             font-weight: 800;
-            color: var(--rb-primary);
+            color: var(--rb-green);
             letter-spacing: 2px;
         }
 
         .btn-primary {
-            background-color: var(--rb-primary);
-            border-color: var(--rb-primary);
+            background-color: var(--rb-green);
+            border-color: var(--rb-green);
         }
 
         .btn-primary:hover,
         .btn-primary:focus {
-            background-color: #218838;
-            border-color: #1e7e34;
+            background-color: var(--rb-green-dark);
+            border-color: var(--rb-green-dark);
         }
 
-        .form-control:focus {
-            border-color: var(--rb-secondary);
-            box-shadow: 0 0 0 .2rem rgba(32, 201, 151, .25);
+        .form-control:focus, .form-select:focus {
+            border-color: var(--rb-green);
+            box-shadow: 0 0 0 .2rem rgba(58, 125, 68, .15);
         }
 
-        a {
-            color: var(--rb-primary);
-        }
-
-        a:hover {
-            color: #1e7e34;
-        }
+        a { color: var(--rb-green); }
+        a:hover { color: var(--rb-green-dark); }
 
         .lang-switcher {
             text-align: center;
@@ -91,16 +111,19 @@
         }
 
         .lang-switcher a {
-            color: #fff;
+            color: #555;
             text-decoration: none;
             font-weight: 500;
-            opacity: .85;
-            transition: opacity .2s;
+            background: rgba(255,255,255,.7);
+            padding: .3rem .8rem;
+            border-radius: 1rem;
+            font-size: .85rem;
+            transition: all .2s;
         }
 
         .lang-switcher a:hover {
-            opacity: 1;
-            color: #fff;
+            background: rgba(255,255,255,.9);
+            color: var(--rb-green);
         }
     </style>
 
@@ -142,11 +165,11 @@
 </script>
 
 @if(session('success'))
-<script>Swal.fire({ icon: 'success', title: '{{ __("Success") }}', text: '{{ session("success") }}', confirmButtonColor: '#28a745' });</script>
+<script>Swal.fire({ icon: 'success', title: '{{ __("Success") }}', text: '{{ session("success") }}', confirmButtonColor: '#3a7d44' });</script>
 @endif
 
 @if(session('error'))
-<script>Swal.fire({ icon: 'error', title: '{{ __("Error") }}', text: '{{ session("error") }}', confirmButtonColor: '#28a745' });</script>
+<script>Swal.fire({ icon: 'error', title: '{{ __("Error") }}', text: '{{ session("error") }}', confirmButtonColor: '#3a7d44' });</script>
 @endif
 
 @stack('scripts')

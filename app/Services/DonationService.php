@@ -105,7 +105,7 @@ class DonationService
     public function getMarketplaceData(array $filters = [])
     {
         $query = Donation::available()
-            ->with(['donor:id,name,city,avatar', 'items'])
+            ->with(['donor:id,name,city,city_id,town_id,avatar', 'items', 'cityRelation:id,name', 'town:id,name'])
             ->latest();
 
         if (!empty($filters['search'])) {
@@ -118,8 +118,12 @@ class DonationService
             });
         }
 
-        if (!empty($filters['city'])) {
-            $query->whereHas('donor', fn ($q) => $q->where('city', $filters['city']));
+        if (!empty($filters['city_id'])) {
+            $query->where('city_id', $filters['city_id']);
+        }
+
+        if (!empty($filters['town_id'])) {
+            $query->where('town_id', $filters['town_id']);
         }
 
         if (!empty($filters['food_type'])) {

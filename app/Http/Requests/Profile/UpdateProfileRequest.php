@@ -18,6 +18,8 @@ class UpdateProfileRequest extends FormRequest
             'phone'   => ['nullable', 'string'],
             'address' => ['nullable', 'string'],
             'city'    => ['nullable', 'string'],
+            'city_id' => ['nullable', 'exists:cities,id'],
+            'town_id' => ['nullable', 'exists:towns,id'],
             'avatar'  => ['nullable', 'image', 'max:2048'],
         ];
     }

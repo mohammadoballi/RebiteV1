@@ -14,19 +14,30 @@
 {{-- Filters --}}
 <div class="card mb-4 border-0 shadow-sm">
     <div class="card-body">
-        <form method="GET" action="{{ route('volunteer.donations.index') }}">
+        <form method="GET" action="{{ route('volunteer.donations.index') }}" id="filterForm">
             <div class="row g-3 align-items-end">
-                <div class="col-md-3">
+                <div class="col-md-2">
                     <label class="form-label fw-semibold"><i class="fas fa-search me-1"></i> {{ __('general.search') }}</label>
                     <input type="text" name="search" class="form-control" placeholder="{{ __('Search food, address...') }}" value="{{ $filters['search'] ?? '' }}">
                 </div>
                 <div class="col-md-2">
                     <label class="form-label fw-semibold"><i class="fas fa-city me-1"></i> {{ __('City') }}</label>
-                    <select name="city" class="form-select">
+                    <select name="city_id" id="filter_city_id" class="form-select">
                         <option value="">{{ __('All Cities') }}</option>
                         @foreach($cities as $city)
-                            <option value="{{ $city }}" {{ ($filters['city'] ?? '') == $city ? 'selected' : '' }}>{{ $city }}</option>
+                            <option value="{{ $city->id }}" {{ ($filters['city_id'] ?? '') == $city->id ? 'selected' : '' }}>{{ $city->name }}</option>
                         @endforeach
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-semibold"><i class="fas fa-map-marker-alt me-1"></i> {{ __('Town') }}</label>
+                    <select name="town_id" id="filter_town_id" class="form-select">
+                        <option value="">{{ __('All Towns') }}</option>
+                        @if(isset($towns) && count($towns) > 0)
+                            @foreach($towns as $town)
+                                <option value="{{ $town->id }}" {{ ($filters['town_id'] ?? '') == $town->id ? 'selected' : '' }}>{{ $town->name }}</option>
+                            @endforeach
+                        @endif
                     </select>
                 </div>
                 <div class="col-md-2">
@@ -37,13 +48,13 @@
                     <label class="form-label fw-semibold"><i class="fas fa-calendar me-1"></i> {{ __('From') }}</label>
                     <input type="date" name="date_from" class="form-control" value="{{ $filters['date_from'] ?? '' }}">
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-1">
                     <label class="form-label fw-semibold">{{ __('To') }}</label>
                     <input type="date" name="date_to" class="form-control" value="{{ $filters['date_to'] ?? '' }}">
                 </div>
                 <div class="col-md-1 d-flex gap-1">
                     <button type="submit" class="btn btn-success flex-grow-1" title="{{ __('general.search') }}"><i class="fas fa-filter"></i></button>
-                    <a href="{{ route('volunteer.donations.index') }}" class="btn btn-outline-secondary" title="{{ __('Reset') }}"><i class="fas fa-times"></i></a>
+                    <a href="{{ route('volunteer.donations.index') }}?city_id=&town_id=" class="btn btn-outline-secondary" title="{{ __('Reset') }}"><i class="fas fa-times"></i></a>
                 </div>
             </div>
         </form>
@@ -95,8 +106,11 @@
                 <p class="card-text small mb-0">
                     <i class="fas fa-user text-success me-1"></i>
                     <strong>{{ $donation->donor->name ?? '-' }}</strong>
-                    @if($donation->donor && $donation->donor->city)
-                        <span class="text-muted">· {{ $donation->donor->city }}</span>
+                    @if($donation->cityRelation)
+                        <span class="text-muted">· {{ $donation->cityRelation->name }}</span>
+                        @if($donation->town)
+                            <span class="text-muted">/ {{ $donation->town->name }}</span>
+                        @endif
                     @endif
                 </p>
             </div>
@@ -197,6 +211,20 @@
         donationsAssign: '{{ route("volunteer.donations.assign", ":id") }}'
     };
 
+    // City -> Town dynamic filter
+    $('#filter_city_id').on('change', function () {
+        var cityId = $(this).val();
+        var $town = $('#filter_town_id');
+        $town.html('<option value="">{{ __("All Towns") }}</option>');
+        if (!cityId) return;
+
+        $.get('/api/cities/' + cityId + '/towns', function (towns) {
+            towns.forEach(function (t) {
+                $town.append('<option value="' + t.id + '">' + t.name + '</option>');
+            });
+        });
+    });
+
     $(document).on('click', '.donation-card, .btn-assign-me', function(e) {
         e.stopPropagation();
         let id = $(this).closest('[data-id]').data('id') || $(this).data('id');
@@ -214,7 +242,10 @@
                 m.find('#modal-image-placeholder').removeClass('d-none');
             }
             m.find('#modal-donor').text(data.donor ? data.donor.name : '-');
-            m.find('#modal-donor-city').text(data.donor && data.donor.city ? data.donor.city : '');
+            var cityText = '';
+            if (data.city_relation) cityText = data.city_relation.name;
+            if (data.town) cityText += ' / ' + data.town.name;
+            m.find('#modal-donor-city').text(cityText);
 
             let html = '';
             if (data.items && data.items.length > 0) {

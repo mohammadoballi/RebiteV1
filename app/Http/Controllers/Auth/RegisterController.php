@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
+use App\Models\City;
 use App\Services\UserService;
 
 class RegisterController extends Controller
@@ -14,7 +15,9 @@ class RegisterController extends Controller
 
     public function showRegistrationForm()
     {
-        return view('auth.register');
+        $cities = City::orderBy('name')->get();
+
+        return view('auth.register', compact('cities'));
     }
 
     public function register(RegisterRequest $request)

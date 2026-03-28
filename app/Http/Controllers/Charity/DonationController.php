@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Charity;
 
 use App\Http\Controllers\Controller;
+use App\Models\City;
 use App\Models\Donation;
 use App\Models\DonationRequest;
+use App\Models\Town;
 use App\Services\DonationRequestService;
 use App\Services\DonationService;
 use Illuminate\Http\JsonResponse;
@@ -20,20 +22,22 @@ class DonationController extends Controller
 
     public function index(Request $request)
     {
-        $filters = $request->only(['search', 'city', 'food_type', 'date_from', 'date_to']);
+        $filters = $request->only(['search', 'city_id', 'town_id', 'food_type', 'date_from', 'date_to']);
         $donations = $this->donationService->getMarketplaceData($filters);
 
-        $cities = \App\Models\User::whereHas('roles', fn($q) => $q->where('name', 'donor'))
-            ->whereNotNull('city')
-            ->distinct()
-            ->pluck('city');
+        $cities = City::orderBy('name')->get();
+        $towns = [];
+        $selectedCityId = $filters['city_id'] ?? null;
+        if ($selectedCityId) {
+            $towns = Town::where('city_id', $selectedCityId)->orderBy('name')->get();
+        }
 
-        return view('charity.donations.index', compact('donations', 'filters', 'cities'));
+        return view('charity.donations.index', compact('donations', 'filters', 'cities', 'towns'));
     }
 
     public function show(int $id): JsonResponse
     {
-        $donation = Donation::with(['donor:id,name,city,phone,avatar', 'items'])->findOrFail($id);
+        $donation = Donation::with(['donor:id,name,city,city_id,town_id,phone,avatar', 'items', 'cityRelation:id,name', 'town:id,name'])->findOrFail($id);
 
         return response()->json($donation);
     }

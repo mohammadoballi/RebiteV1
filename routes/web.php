@@ -19,11 +19,20 @@ use App\Http\Controllers\Volunteer\DashboardController as VolunteerDashboardCont
 use App\Http\Controllers\Volunteer\AssignmentController;
 use App\Http\Controllers\Volunteer\DonationController as VolunteerDonationController;
 use App\Http\Controllers\RatingController;
+use App\Http\Controllers\LocationController;
 
 // Landing Page
 Route::get('/', function () {
     return view('landing');
 })->name('landing');
+
+Route::get('/how-it-works', function () {
+    return view('pages.how-it-works');
+})->name('how-it-works');
+
+Route::get('/safety-guidelines', function () {
+    return view('pages.safety-guidelines');
+})->name('safety-guidelines');
 Route::get('/home', function () {
   $role = auth()->user()->roles->pluck('display_name')->implode(', ');
   if ($role == 'admin') {
@@ -50,6 +59,10 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::post('logout', [LoginController::class, 'logout'])->name('logout')->middleware('auth');
+
+// Location API (public, used by registration and other forms)
+Route::get('api/cities', [LocationController::class, 'cities'])->name('api.cities');
+Route::get('api/cities/{city}/towns', [LocationController::class, 'towns'])->name('api.towns');
 
 // Authenticated & Approved Routes
 Route::middleware(['auth', 'approved'])->group(function () {

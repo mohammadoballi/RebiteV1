@@ -26,6 +26,8 @@ class User extends Authenticatable implements LaratrustUser
         'status',
         'address',
         'city',
+        'city_id',
+        'town_id',
         'role_type',
         'health_certificate',
         'organization_name',
@@ -49,6 +51,16 @@ class User extends Authenticatable implements LaratrustUser
     protected $appends = ['average_rating'];
 
     // ── Relationships ──
+
+    public function cityRelation()
+    {
+        return $this->belongsTo(City::class, 'city_id');
+    }
+
+    public function town()
+    {
+        return $this->belongsTo(Town::class, 'town_id');
+    }
 
     public function donations()
     {

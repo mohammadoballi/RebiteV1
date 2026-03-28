@@ -6,6 +6,8 @@ use Illuminate\Database\Seeder;
 use App\Models\User;
 use App\Models\Role;
 use App\Models\Permission;
+use App\Models\City;
+use App\Models\Town;
 use App\Models\Donation;
 use App\Models\DonationItem;
 use App\Models\DonationRequest;
@@ -48,19 +50,31 @@ class DatabaseSeeder extends Seeder
         ]);
         $adminUser->addRole('admin');
 
+        // ── Seed Cities & Towns ──
+        $this->call(CityTownSeeder::class);
+        $allCities = City::with('towns')->get();
+
+        $getRandomCityTown = function () use ($allCities) {
+            $city = $allCities->random();
+            $town = $city->towns->isNotEmpty() ? $city->towns->random() : null;
+            return [$city->id, $town?->id];
+        };
+
         // ── Donors (15) ──
         $donorNames = [
-            'Al Baik Restaurant', 'Herfy', 'Kudu', 'Shawarmer', 'Pizza Hut Riyadh',
-            'Dominos Jeddah', 'McDonald\'s', 'Burger King', 'Hardees', 'KFC Dammam',
-            'Tamimi Markets', 'Panda Hypermarket', 'Danube Supermarket', 'LuLu Hypermarket', 'Carrefour Saudi',
+            'Hashem Restaurant', 'Jabri Restaurant', 'Fakhr El-Din', 'Shawarmer Amman', 'Pizza Hut Amman',
+            'Dominos Irbid', 'McDonald\'s Jordan', 'Burger King Amman', 'Popeyes Jordan', 'KFC Zarqa',
+            'Cozmo Markets', 'Safeway Hypermarket', 'Carrefour Jordan', 'Miles Supermarket', 'Sameh Mall',
         ];
-        $cities = ['Riyadh', 'Jeddah', 'Dammam', 'Makkah', 'Madinah', 'Khobar', 'Tabuk', 'Abha'];
         $donors = [];
         foreach ($donorNames as $i => $name) {
+            [$cityId, $townId] = $getRandomCityTown();
+            $cityName = $allCities->firstWhere('id', $cityId)->name;
             $user = User::create([
                 'name' => $name, 'email' => 'donor' . ($i + 1) . '@rebite.com',
                 'password' => Hash::make('password'), 'phone' => '055' . str_pad($i, 7, '0', STR_PAD_LEFT),
-                'status' => 'approved', 'city' => $cities[array_rand($cities)],
+                'status' => 'approved', 'city' => $cityName,
+                'city_id' => $cityId, 'town_id' => $townId,
                 'address' => 'Street ' . rand(1, 99) . ', District ' . rand(1, 20),
                 'locale' => 'en',
             ]);
@@ -70,10 +84,13 @@ class DatabaseSeeder extends Seeder
 
         // 3 pending donors
         for ($i = 0; $i < 3; $i++) {
+            [$cityId, $townId] = $getRandomCityTown();
+            $cityName = $allCities->firstWhere('id', $cityId)->name;
             $user = User::create([
                 'name' => 'Pending Donor ' . ($i + 1), 'email' => 'pendingdonor' . ($i + 1) . '@rebite.com',
                 'password' => Hash::make('password'), 'phone' => '056' . str_pad($i, 7, '0', STR_PAD_LEFT),
-                'status' => 'pending', 'city' => $cities[array_rand($cities)],
+                'status' => 'pending', 'city' => $cityName,
+                'city_id' => $cityId, 'town_id' => $townId,
                 'health_certificate' => 'certificates/sample.pdf', 'locale' => 'en',
             ]);
             $user->addRole('donor');
@@ -81,16 +98,19 @@ class DatabaseSeeder extends Seeder
 
         // ── Charities (10) ──
         $charityNames = [
-            'Food Bank Saudi', 'Ehsan Foundation', 'Ita\'am (إطعام)', 'Saudi Red Crescent',
-            'Takaful Charity', 'Al-Bir Society Riyadh', 'Orphans Care Society', 'Ensan Charity',
-            'Al-Khair Foundation', 'Bir Society Jeddah',
+            'Food Bank Jordan', 'Ehsan Foundation', 'Tkiyet Um Ali', 'Jordan Red Crescent',
+            'Takaful Charity', 'Al-Bir Society Amman', 'Orphans Care Society', 'Ensan Charity',
+            'Al-Khair Foundation', 'Noor Al Hussein Foundation',
         ];
         $charities = [];
         foreach ($charityNames as $i => $name) {
+            [$cityId, $townId] = $getRandomCityTown();
+            $cityName = $allCities->firstWhere('id', $cityId)->name;
             $user = User::create([
                 'name' => $name, 'email' => 'charity' . ($i + 1) . '@rebite.com',
                 'password' => Hash::make('password'), 'phone' => '057' . str_pad($i, 7, '0', STR_PAD_LEFT),
-                'status' => 'approved', 'city' => $cities[array_rand($cities)],
+                'status' => 'approved', 'city' => $cityName,
+                'city_id' => $cityId, 'town_id' => $townId,
                 'organization_name' => $name, 'locale' => 'en',
             ]);
             $user->addRole('charity');
@@ -107,11 +127,14 @@ class DatabaseSeeder extends Seeder
         $volunteers = [];
         foreach ($volunteerNames as $i => $name) {
             $type = $i < 14 ? 'delivery' : 'packaging';
+            [$cityId, $townId] = $getRandomCityTown();
+            $cityName = $allCities->firstWhere('id', $cityId)->name;
             $user = User::create([
                 'name' => $name, 'email' => 'vol' . ($i + 1) . '@rebite.com',
                 'password' => Hash::make('password'), 'phone' => '058' . str_pad($i, 7, '0', STR_PAD_LEFT),
                 'status' => 'approved', 'role_type' => $type,
-                'city' => $cities[array_rand($cities)], 'locale' => 'en',
+                'city' => $cityName, 'city_id' => $cityId, 'town_id' => $townId,
+                'locale' => 'en',
             ]);
             $user->addRole('volunteer');
             $volunteers[] = $user;
@@ -119,10 +142,13 @@ class DatabaseSeeder extends Seeder
 
         // 2 pending volunteers
         for ($i = 0; $i < 2; $i++) {
+            [$cityId, $townId] = $getRandomCityTown();
             $user = User::create([
                 'name' => 'Pending Volunteer ' . ($i + 1), 'email' => 'pendingvol' . ($i + 1) . '@rebite.com',
                 'password' => Hash::make('password'), 'phone' => '059' . str_pad($i, 7, '0', STR_PAD_LEFT),
-                'status' => 'pending', 'role_type' => 'delivery', 'locale' => 'en',
+                'status' => 'pending', 'role_type' => 'delivery',
+                'city_id' => $cityId, 'town_id' => $townId,
+                'locale' => 'en',
             ]);
             $user->addRole('volunteer');
         }
@@ -166,11 +192,13 @@ class DatabaseSeeder extends Seeder
 
             $donation = Donation::create([
                 'user_id' => $donorUser->id,
+                'city_id' => $donorUser->city_id,
+                'town_id' => $donorUser->town_id,
                 'food_type' => implode(', ', $selectedFoods),
                 'description' => rand(0, 1) ? 'Surplus food from today\'s preparation. Good quality and fresh.' : null,
                 'quantity' => rand(1, 50),
                 'quantity_unit' => $units[array_rand($units)],
-                'pickup_address' => $addresses[array_rand($addresses)] . ', ' . $donorUser->city,
+                'pickup_address' => $addresses[array_rand($addresses)] . ', ' . ($donorUser->city ?? ''),
                 'latitude' => rand(2100, 2700) / 100,
                 'longitude' => rand(3600, 5000) / 100,
                 'pickup_time' => $pickupTime,

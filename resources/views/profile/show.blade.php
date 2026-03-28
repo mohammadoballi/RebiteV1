@@ -96,8 +96,24 @@
                             <input type="text" class="form-control" id="phone" name="phone" value="{{ $user->phone }}">
                         </div>
                         <div class="col-md-6">
-                            <label for="city" class="form-label">{{ __('City') }}</label>
-                            <input type="text" class="form-control" id="city" name="city" value="{{ $user->city }}">
+                            <label for="city_id" class="form-label">{{ __('City') }}</label>
+                            <select class="form-select" id="city_id" name="city_id">
+                                <option value="">{{ __('Select City') }}</option>
+                                @foreach($cities as $city)
+                                    <option value="{{ $city->id }}" {{ $user->city_id == $city->id ? 'selected' : '' }}>{{ $city->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="town_id" class="form-label">{{ __('Town') }}</label>
+                            <select class="form-select" id="town_id" name="town_id">
+                                <option value="">{{ __('Select Town') }}</option>
+                                @if($user->city_id && $user->cityRelation)
+                                    @foreach($user->cityRelation->towns as $town)
+                                        <option value="{{ $town->id }}" {{ $user->town_id == $town->id ? 'selected' : '' }}>{{ $town->name }}</option>
+                                    @endforeach
+                                @endif
+                            </select>
                         </div>
                         <div class="col-12">
                             <label for="address" class="form-label">{{ __('Address') }}</label>
@@ -228,6 +244,20 @@ $(document).ready(function() {
                 var msg = xhr.responseJSON?.message || '{{ __("Failed to upload avatar.") }}';
                 showError(msg);
             }
+        });
+    });
+
+    // City -> Town dynamic loading
+    $('#city_id').on('change', function () {
+        var cityId = $(this).val();
+        var $town = $('#town_id');
+        $town.html('<option value="">{{ __("Select Town") }}</option>');
+        if (!cityId) return;
+
+        $.get('/api/cities/' + cityId + '/towns', function (towns) {
+            towns.forEach(function (t) {
+                $town.append('<option value="' + t.id + '">' + t.name + '</option>');
+            });
         });
     });
 

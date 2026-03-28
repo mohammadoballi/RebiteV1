@@ -55,6 +55,20 @@ function updateRemoveButtons() {
 }
 
 $(document).ready(function() {
+    // City -> Town dynamic loading for donation form
+    $('#donation_city_id').on('change', function () {
+        var cityId = $(this).val();
+        var $town = $('#donation_town_id');
+        $town.html('<option value="">Select Town</option>');
+        if (!cityId) return;
+
+        $.get('/api/cities/' + cityId + '/towns', function (towns) {
+            towns.forEach(function (t) {
+                $town.append('<option value="' + t.id + '">' + t.name + '</option>');
+            });
+        });
+    });
+
     // DataTable
     let donationsTable = initDataTable('donations-table', window.routes.donationsDatatable, [
         { data: 'id', name: 'id' },
@@ -114,6 +128,19 @@ $(document).ready(function() {
             $('#donationForm [name="pickup_time"]').val(data.pickup_time ? data.pickup_time.substring(0, 16) : '');
             $('#donationForm [name="expiry_time"]').val(data.expiry_time ? data.expiry_time.substring(0, 16) : '');
             $('#donationForm [name="notes"]').val(data.notes);
+
+            // Populate city and town
+            if (data.city_id) {
+                $('#donation_city_id').val(data.city_id);
+                $.get('/api/cities/' + data.city_id + '/towns', function (towns) {
+                    var $town = $('#donation_town_id');
+                    $town.html('<option value="">Select Town</option>');
+                    towns.forEach(function (t) {
+                        var sel = (data.town_id && data.town_id == t.id) ? 'selected' : '';
+                        $town.append('<option value="' + t.id + '" ' + sel + '>' + t.name + '</option>');
+                    });
+                });
+            }
 
             $('#donationModal').modal('show');
         });
