@@ -2,6 +2,13 @@
 
 @section('title', __('dashboard.my_donations'))
 
+@push('styles')
+<style>
+    #donationModal .modal-body { max-height: 75vh; overflow-y: auto; }
+    #viewDonationModal .modal-body { max-height: 75vh; overflow-y: auto; }
+</style>
+@endpush
+
 @section('content')
 <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2">
     <h1><i class="fas fa-gift me-2"></i>{{ __('dashboard.my_donations') }}</h1>
@@ -81,10 +88,18 @@
                         </div>
 
                         <div class="col-md-4">
-                            <label for="volunteers_needed" class="form-label">{{ __('Volunteers Needed') }} <span class="text-danger">*</span></label>
+                            <label class="form-label">{{ __('auth_page.delivery') }} {{ __('Volunteers') }} <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <span class="input-group-text"><i class="fas fa-users"></i></span>
-                                <input type="number" class="form-control" id="volunteers_needed" name="volunteers_needed" min="1" max="50" value="1" required>
+                                <span class="input-group-text"><i class="fas fa-truck"></i></span>
+                                <input type="number" class="form-control" id="delivery_volunteers_needed" name="delivery_volunteers_needed" min="0" max="50" value="1" required>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label">{{ __('auth_page.packaging') }} {{ __('Volunteers') }} <span class="text-danger">*</span></label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-box"></i></span>
+                                <input type="number" class="form-control" id="packaging_volunteers_needed" name="packaging_volunteers_needed" min="0" max="50" value="0" required>
                             </div>
                         </div>
 
@@ -142,8 +157,14 @@
                     </div>
                     <div class="col-md-4">
                         <div class="p-2 rounded bg-light">
-                            <small class="text-muted d-block">{{ __('Volunteers') }}</small>
-                            <span id="view-volunteers">-</span>
+                            <small class="text-muted d-block">{{ __('auth_page.delivery') }} {{ __('Volunteers') }}</small>
+                            <span id="view-delivery-volunteers">-</span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="p-2 rounded bg-light">
+                            <small class="text-muted d-block">{{ __('auth_page.packaging') }} {{ __('Volunteers') }}</small>
+                            <span id="view-packaging-volunteers">-</span>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -181,7 +202,6 @@
     </div>
 </div>
 
-@include('components.rate-volunteer-modal')
 @endsection
 
 @push('scripts')

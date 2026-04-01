@@ -19,7 +19,7 @@ class ProfileController extends Controller
         $cities = City::orderBy('name')->get();
 
         return view('profile.show', [
-            'user'   => auth()->user(),
+            'user'   => auth()->user()->load('roles'),
             'cities' => $cities,
         ]);
     }

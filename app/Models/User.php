@@ -35,6 +35,10 @@ class User extends Authenticatable implements LaratrustUser
         'rejection_reason',
         'locale',
         'points',
+        'stripe_customer_id',
+        'stripe_subscription_id',
+        'subscription_status',
+        'subscription_ends_at',
     ];
 
     protected $hidden = [
@@ -46,6 +50,7 @@ class User extends Authenticatable implements LaratrustUser
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
         'points' => 'integer',
+        'subscription_ends_at' => 'datetime',
     ];
 
     protected $appends = ['average_rating'];
@@ -149,5 +154,18 @@ class User extends Authenticatable implements LaratrustUser
             'Bronze' => 'info',
             default  => 'light',
         };
+    }
+
+    public function hasActiveSubscription(): bool
+    {
+        if ($this->subscription_status === 'active') {
+            return true;
+        }
+
+        if ($this->subscription_ends_at && $this->subscription_ends_at->isFuture()) {
+            return true;
+        }
+
+        return false;
     }
 }

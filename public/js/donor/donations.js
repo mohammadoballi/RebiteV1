@@ -124,7 +124,8 @@ $(document).ready(function() {
             // Populate other fields
             $('#donationForm [name="description"]').val(data.description);
             $('#donationForm [name="pickup_address"]').val(data.pickup_address);
-            $('#donationForm [name="volunteers_needed"]').val(data.volunteers_needed || 1);
+            $('#donationForm [name="delivery_volunteers_needed"]').val(data.delivery_volunteers_needed ?? 1);
+            $('#donationForm [name="packaging_volunteers_needed"]').val(data.packaging_volunteers_needed ?? 0);
             $('#donationForm [name="pickup_time"]').val(data.pickup_time ? data.pickup_time.substring(0, 16) : '');
             $('#donationForm [name="expiry_time"]').val(data.expiry_time ? data.expiry_time.substring(0, 16) : '');
             $('#donationForm [name="notes"]').val(data.notes);
@@ -217,7 +218,8 @@ $(document).ready(function() {
                 'in_transit': 'secondary', 'delivered': 'success', 'completed': 'success', 'cancelled': 'danger'
             };
             modal.find('#view-status').html('<span class="badge bg-' + (statusBadges[data.status] || 'secondary') + '">' + data.status + '</span>');
-            modal.find('#view-volunteers').html(data.volunteers_count + '/' + data.volunteers_needed + ' <i class="fas fa-users text-success"></i>');
+            modal.find('#view-delivery-volunteers').html((data.delivery_volunteers_needed || 0) + ' <i class="fas fa-truck text-success"></i>');
+            modal.find('#view-packaging-volunteers').html((data.packaging_volunteers_needed || 0) + ' <i class="fas fa-box text-info"></i>');
             modal.find('#view-pickup-time').text(data.pickup_time ? new Date(data.pickup_time).toLocaleString() : '-');
             modal.find('#view-address').text(data.pickup_address || '-');
 
@@ -245,8 +247,6 @@ $(document).ready(function() {
                         volHtml += '<strong>' + a.volunteer.name + '</strong>';
                         volHtml += ' <span class="badge bg-' + (a.status === 'completed' ? 'success' : 'info') + ' ms-1">' + a.status + '</span>';
                         volHtml += '</div>';
-                        volHtml += '<button class="btn btn-sm btn-outline-warning" onclick="openRateModal(' + a.volunteer.id + ', \'' + a.volunteer.name.replace(/'/g, "\\'") + '\')">';
-                        volHtml += '<i class="fas fa-star me-1"></i> Rate</button>';
                         volHtml += '</div>';
                     }
                 });

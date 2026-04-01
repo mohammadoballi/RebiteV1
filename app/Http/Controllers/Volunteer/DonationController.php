@@ -6,15 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\Donation;
 use App\Models\DonationAssignment;
+use App\Models\Setting;
 use App\Models\Town;
 use App\Services\DonationService;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class DonationController extends Controller
 {
     public function __construct(
-        protected DonationService $donationService
+        protected DonationService $donationService,
+        protected NotificationService $notificationService
     ) {}
 
     public function index(Request $request)
@@ -31,6 +34,8 @@ class DonationController extends Controller
             }
         }
 
+        $volunteerType = $user->role_type ?? 'delivery';
+        $filters['volunteer_type'] = $volunteerType;
         $donations = $this->donationService->getMarketplaceData($filters);
 
         $cities = City::orderBy('name')->get();
@@ -75,7 +80,7 @@ class DonationController extends Controller
 
         $type = auth()->user()->role_type ?? 'delivery';
 
-        DonationAssignment::create([
+        $assignment = DonationAssignment::create([
             'donation_id'     => $donation->id,
             'volunteer_id'    => auth()->id(),
             'assignment_type' => $type,
@@ -84,7 +89,10 @@ class DonationController extends Controller
 
         $donation->increment('volunteers_count');
 
-        auth()->user()->addPoints(5);
+        auth()->user()->addPoints(Setting::getInt('volunteer_signup_points', 5));
+
+        $this->notificationService->notifyVolunteerAssigned($assignment);
+        $this->notificationService->notifyDonorVolunteerAssigned($assignment);
 
         return response()->json([
             'message' => __('You have been assigned to this donation successfully.'),

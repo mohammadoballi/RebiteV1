@@ -43,11 +43,11 @@ $(document).ready(function() {
     });
 
     // Update donation status
-    $(document).on('click', '#btn-update-donation-status', function() {
+    $(document).on('click', '#btn-update-status', function() {
         let donationId = $('#update-donation-id').val();
         let newStatus = $('#donation-status-select').val();
         $.ajax({
-            url: window.routes.donationsUpdateStatus.replace(':id', donationId),
+            url: window.routes.donationsStatus.replace(':id', donationId),
             type: 'PUT',
             data: { status: newStatus },
             success: function(response) {

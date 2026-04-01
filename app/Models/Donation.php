@@ -35,6 +35,8 @@ class Donation extends Model
         'notes',
         'image',
         'volunteers_needed',
+        'delivery_volunteers_needed',
+        'packaging_volunteers_needed',
         'volunteers_count',
     ];
 
@@ -42,6 +44,8 @@ class Donation extends Model
         'pickup_time' => 'datetime',
         'expiry_time' => 'datetime',
         'volunteers_needed' => 'integer',
+        'delivery_volunteers_needed' => 'integer',
+        'packaging_volunteers_needed' => 'integer',
         'volunteers_count' => 'integer',
     ];
 
@@ -113,7 +117,7 @@ class Donation extends Model
 
     public function scopeAvailable($query)
     {
-        return $query->whereIn('status', [self::STATUS_PENDING, self::STATUS_ACCEPTED])
+        return $query->where('status', self::STATUS_ACCEPTED)
                      ->where(function ($q) {
                          $q->whereNull('expiry_time')
                            ->orWhere('expiry_time', '>', now());
@@ -124,5 +128,19 @@ class Donation extends Model
     public function scopeNotFull($query)
     {
         return $query->whereColumn('volunteers_count', '<', 'volunteers_needed');
+    }
+
+    public function scopeNeedsVolunteerType($query, string $type)
+    {
+        $col = $type === 'packaging' ? 'packaging_volunteers_needed' : 'delivery_volunteers_needed';
+
+        return $query->where($col, '>', 0)
+            ->where($col, '>', function ($sub) use ($type) {
+                $sub->selectRaw('COUNT(*)')
+                    ->from('donation_assignments')
+                    ->whereColumn('donation_assignments.donation_id', 'donations.id')
+                    ->where('donation_assignments.assignment_type', $type)
+                    ->whereNotIn('donation_assignments.status', ['cancelled']);
+            });
     }
 }

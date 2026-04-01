@@ -67,5 +67,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'approved' => \App\Http\Middleware\CheckApproved::class,
         'locale' => \App\Http\Middleware\SetLocale::class,
+        'role' => \App\Http\Middleware\RoleMiddleware::class,
+        'subscribed' => \App\Http\Middleware\CheckCharitySubscription::class,
     ];
 }

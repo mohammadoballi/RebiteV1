@@ -29,6 +29,8 @@ return [
     'bags' => 'Bags',
     'plates' => 'Plates',
     'volunteers_needed' => 'Volunteers Needed',
+    'delivery_volunteers' => 'Delivery Volunteers',
+    'packaging_volunteers' => 'Packaging Volunteers',
     'food_items' => 'Food Items',
     'add_item' => 'Add Item',
     'donation_details' => 'Donation Details',

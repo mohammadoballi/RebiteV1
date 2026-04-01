@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\DonationController as AdminDonationController;
 use App\Http\Controllers\Admin\ReportController as AdminReportController;
+use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Donor\DashboardController as DonorDashboardController;
 use App\Http\Controllers\Donor\DonationController as DonorDonationController;
 use App\Http\Controllers\Charity\DashboardController as CharityDashboardController;
@@ -64,6 +65,9 @@ Route::post('logout', [LoginController::class, 'logout'])->name('logout')->middl
 Route::get('api/cities', [LocationController::class, 'cities'])->name('api.cities');
 Route::get('api/cities/{city}/towns', [LocationController::class, 'towns'])->name('api.towns');
 
+// Stripe Webhook (excluded from CSRF)
+Route::post('stripe/webhook', [\App\Http\Controllers\Charity\SubscriptionController::class, 'handleWebhook'])->name('stripe.webhook');
+
 // Authenticated & Approved Routes
 Route::middleware(['auth', 'approved'])->group(function () {
 
@@ -104,6 +108,18 @@ Route::middleware(['auth', 'approved'])->group(function () {
         });
 
         Route::get('reports', [AdminReportController::class, 'index'])->name('reports');
+
+        Route::prefix('settings')->name('settings.')->group(function () {
+            Route::get('/', [AdminSettingsController::class, 'index'])->name('index');
+            Route::post('/', [AdminSettingsController::class, 'update'])->name('update');
+        });
+
+        Route::prefix('donation-requests')->name('donation-requests.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\DonationRequestController::class, 'index'])->name('index');
+            Route::get('datatable', [\App\Http\Controllers\Admin\DonationRequestController::class, 'datatable'])->name('datatable');
+            Route::post('{id}/approve', [\App\Http\Controllers\Admin\DonationRequestController::class, 'approve'])->name('approve');
+            Route::post('{id}/reject', [\App\Http\Controllers\Admin\DonationRequestController::class, 'reject'])->name('reject');
+        });
     });
 
     // Donor Routes
@@ -124,19 +140,31 @@ Route::middleware(['auth', 'approved'])->group(function () {
     Route::middleware('role:charity')->prefix('charity')->name('charity.')->group(function () {
         Route::get('dashboard', [CharityDashboardController::class, 'index'])->name('dashboard');
 
+        // Subscription management (no subscription required)
+        Route::get('subscription', [\App\Http\Controllers\Charity\SubscriptionController::class, 'index'])->name('subscription.index');
+        Route::post('subscription/checkout', [\App\Http\Controllers\Charity\SubscriptionController::class, 'checkout'])->name('subscription.checkout');
+        Route::get('subscription/success', [\App\Http\Controllers\Charity\SubscriptionController::class, 'success'])->name('subscription.success');
+
+        // Browsing (no subscription required)
         Route::prefix('donations')->name('donations.')->group(function () {
             Route::get('/', [CharityDonationController::class, 'index'])->name('index');
             Route::get('datatable', [CharityDonationController::class, 'datatable'])->name('datatable');
             Route::get('{id}', [CharityDonationController::class, 'show'])->name('show');
-            Route::post('{id}/request', [CharityDonationController::class, 'request'])->name('request');
         });
 
         Route::get('my-requests', [CharityDonationController::class, 'myRequests'])->name('my-requests');
         Route::get('my-requests/datatable', [CharityDonationController::class, 'myRequestsDatatable'])->name('my-requests.datatable');
+
+        // Actions (subscription required)
+        Route::middleware('subscribed')->group(function () {
+            Route::post('donations/{id}/request', [CharityDonationController::class, 'request'])->name('donations.request');
+        });
     });
 
-    // Rating Routes (for donor & charity to rate volunteers)
-    Route::post('ratings', [RatingController::class, 'store'])->name('ratings.store');
+    // Rating Routes (charity rates donor & volunteer after completion)
+    Route::middleware('role:charity')->group(function () {
+        Route::post('ratings', [RatingController::class, 'store'])->name('ratings.store');
+    });
     Route::get('my-ratings', [RatingController::class, 'myRatings'])->name('ratings.my');
 
     // Volunteer Routes

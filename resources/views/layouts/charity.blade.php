@@ -129,6 +129,13 @@
            href="{{ route('charity.my-requests') }}">
             <i class="fas fa-clipboard-list"></i> {{ __('My Requests') }}
         </a>
+        <a class="nav-link {{ request()->routeIs('charity.subscription.*') ? 'active' : '' }}"
+           href="{{ route('charity.subscription.index') }}">
+            <i class="fas fa-credit-card"></i> {{ __('Subscription') }}
+            @if(!auth()->user()->hasActiveSubscription())
+                <span class="badge bg-warning text-dark ms-auto">!</span>
+            @endif
+        </a>
         <a class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}"
            href="{{ route('profile.show') }}">
             <i class="fas fa-user"></i> {{ __('Profile') }}

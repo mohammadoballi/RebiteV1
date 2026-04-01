@@ -30,9 +30,17 @@
     const countUrl = '{{ route("notifications.unread-count") }}';
     const indexUrl = '{{ route("notifications.index") }}';
 
+    function parseData(n) {
+        var d = n.data;
+        if (typeof d === 'string') {
+            try { d = JSON.parse(d); } catch(e) { d = {}; }
+        }
+        return d || {};
+    }
+
     function loadNotifications() {
         $.getJSON(countUrl, function (res) {
-            const n = res.count || 0;
+            var n = res.count || 0;
             if (n > 0) {
                 $count.text(n > 99 ? '99+' : n).removeClass('d-none');
             } else {
@@ -41,24 +49,34 @@
         });
 
         $.getJSON(indexUrl, function (res) {
-            const items = res.data || res;
+            var items = res.data || res;
             if (!items.length) { $empty.show(); return; }
             $empty.hide();
 
-            let html = '';
-            items.slice(0, 8).forEach(function (n) {
-                const cls = n.read_at ? '' : ' unread';
-                html += '<a href="#" class="dropdown-item' + cls + '" data-id="' + n.id + '">'
-                      + '<div>' + (n.data?.message || n.message || '') + '</div>'
-                      + '<div class="notif-time">' + (n.created_at_human || n.created_at || '') + '</div>'
-                      + '</a>';
+            var html = '';
+            items.slice(0, 10).forEach(function (n) {
+                var d = parseData(n);
+                var cls = n.read_at ? '' : ' unread';
+                var title = d.title || '';
+                var message = d.message || '';
+                var time = n.created_at_human || '';
+
+                html += '<a href="#" class="dropdown-item' + cls + '" data-id="' + n.id + '">';
+                if (title) {
+                    html += '<div class="fw-semibold small">' + title + '</div>';
+                }
+                html += '<div class="small">' + message + '</div>';
+                if (time) {
+                    html += '<div class="notif-time">' + time + '</div>';
+                }
+                html += '</a>';
             });
             $list.html(html);
         });
     }
 
     loadNotifications();
-    setInterval(loadNotifications, 60000);
+    setInterval(loadNotifications, 30000);
 
     $(document).on('click', '#markAllRead', function (e) {
         e.preventDefault();
@@ -70,10 +88,17 @@
 
     $(document).on('click', '#notifList .dropdown-item', function (e) {
         e.preventDefault();
-        const id = $(this).data('id');
+        var id = $(this).data('id');
         if (id) {
+            var $item = $(this);
             $.post('/notifications/' + id + '/read', function () {
-                loadNotifications();
+                $item.removeClass('unread');
+                var current = parseInt($count.text()) || 0;
+                if (current > 1) {
+                    $count.text(current - 1);
+                } else {
+                    $count.addClass('d-none');
+                }
             });
         }
     });

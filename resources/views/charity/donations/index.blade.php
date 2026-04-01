@@ -58,6 +58,16 @@
     </div>
 </div>
 
+@if(!auth()->user()->hasActiveSubscription())
+<div class="alert alert-warning d-flex align-items-center mb-4" role="alert">
+    <i class="fas fa-exclamation-triangle me-2 fs-5"></i>
+    <div>
+        {{ __('You need an active subscription to request donations.') }}
+        <a href="{{ route('charity.subscription.index') }}" class="alert-link fw-bold">{{ __('Subscribe Now') }}</a>
+    </div>
+</div>
+@endif
+
 {{-- Donation Cards Grid --}}
 <div class="row g-4">
     @forelse($donations as $donation)
@@ -121,9 +131,15 @@
             </div>
 
             <div class="card-footer bg-transparent border-top-0 pt-0">
+                @if(auth()->user()->hasActiveSubscription())
                 <button class="btn btn-success btn-sm w-100 btn-request-donation" data-id="{{ $donation->id }}">
                     <i class="fas fa-hand-holding-heart me-1"></i> {{ __('donations.request_donation') }}
                 </button>
+                @else
+                <a href="{{ route('charity.subscription.index') }}" class="btn btn-outline-warning btn-sm w-100">
+                    <i class="fas fa-lock me-1"></i> {{ __('Subscribe to Request') }}
+                </a>
+                @endif
             </div>
         </div>
     </div>
@@ -209,12 +225,19 @@
                 <div class="mt-3">
                     <h6 class="fw-bold"><i class="fas fa-paper-plane me-1 text-success"></i> {{ __('donations.request_donation') }}</h6>
                     <input type="hidden" id="request-donation-id">
+                    @if(auth()->user()->hasActiveSubscription())
                     <div class="mb-3">
                         <textarea class="form-control" id="request-message" rows="2" maxlength="500" placeholder="{{ __('Optional message to the donor...') }}"></textarea>
                     </div>
                     <button type="button" class="btn btn-success w-100" id="btn-submit-request">
                         <i class="fas fa-hand-holding-heart me-1"></i> {{ __('donations.request_donation') }}
                     </button>
+                    @else
+                    <div class="alert alert-warning text-center mb-0">
+                        <i class="fas fa-lock me-1"></i> {{ __('Subscription required.') }}
+                        <a href="{{ route('charity.subscription.index') }}" class="alert-link">{{ __('Subscribe Now') }}</a>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>

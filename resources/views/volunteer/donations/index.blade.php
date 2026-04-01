@@ -77,8 +77,15 @@
                         <i class="fas fa-utensils fa-3x opacity-75"></i>
                     </div>
                 @endif
-                <span class="position-absolute top-0 end-0 m-2 badge {{ $donation->is_full ? 'bg-secondary' : 'bg-success' }} rounded-pill">
-                    <i class="fas fa-users me-1"></i>{{ $donation->volunteers_count }}/{{ $donation->volunteers_needed }}
+                <span class="position-absolute top-0 end-0 m-2">
+                    <span class="badge {{ $donation->is_full ? 'bg-secondary' : 'bg-success' }} rounded-pill">
+                        <i class="fas fa-users me-1"></i>{{ $donation->volunteers_count }}/{{ $donation->volunteers_needed }}
+                    </span>
+                    <br>
+                    <span class="badge bg-dark bg-opacity-75 rounded-pill mt-1" style="font-size: .65rem">
+                        <i class="fas fa-truck"></i> {{ $donation->delivery_volunteers_needed }}
+                        · <i class="fas fa-box"></i> {{ $donation->packaging_volunteers_needed }}
+                    </span>
                 </span>
                 <span class="position-absolute bottom-0 start-0 m-2 badge bg-dark bg-opacity-75 rounded-pill">
                     <i class="fas fa-clock me-1"></i>{{ $donation->pickup_time ? $donation->pickup_time->format('M d, H:i') : '-' }}
@@ -177,6 +184,7 @@
                                 <div class="p-2 rounded bg-light">
                                     <small class="text-muted d-block">{{ __('Volunteers') }}</small>
                                     <strong id="modal-volunteers">-</strong>
+                                    <div class="small text-muted mt-1" id="modal-volunteer-types">-</div>
                                 </div>
                             </div>
                         </div>
@@ -261,6 +269,7 @@
             m.find('#modal-items-list').html(html);
             m.find('#modal-pickup-time').text(data.pickup_time ? new Date(data.pickup_time).toLocaleString() : '-');
             m.find('#modal-volunteers').html(data.volunteers_count + '/' + data.volunteers_needed + ' <i class="fas fa-users text-success"></i>');
+            m.find('#modal-volunteer-types').html('<i class="fas fa-truck"></i> ' + (data.delivery_volunteers_needed || 0) + ' · <i class="fas fa-box"></i> ' + (data.packaging_volunteers_needed || 0));
             m.find('#modal-address').text(data.pickup_address || '-');
             m.find('#assign-donation-id').val(data.id);
             m.modal('show');

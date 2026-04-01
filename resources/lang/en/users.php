@@ -10,6 +10,7 @@ return [
     'reject' => 'Reject',
     'rejection_reason' => 'Rejection Reason',
     'health_certificate' => 'Health Certificate',
+    'organization_license' => 'Organization License',
     'manage_users' => 'Manage Users',
     'user_details' => 'User Details',
     'edit_user' => 'Edit User',

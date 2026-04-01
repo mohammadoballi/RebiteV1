@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Donation;
 use App\Models\DonationItem;
+use App\Models\Setting;
 use App\Models\User;
 use App\Repositories\DonationRepository;
 use Illuminate\Database\Eloquent\Collection;
@@ -23,7 +24,9 @@ class DonationService
             $items = $data['items'] ?? [];
             unset($data['items']);
 
-            // Set food_type from first item for backward compat
+            $data['volunteers_needed'] = ($data['delivery_volunteers_needed'] ?? 0)
+                                       + ($data['packaging_volunteers_needed'] ?? 0);
+
             if (!empty($items)) {
                 $data['food_type'] = collect($items)->pluck('food_type')->implode(', ');
                 $data['quantity'] = collect($items)->pluck('quantity')->first();
@@ -39,7 +42,9 @@ class DonationService
             // Award donor 10 points per donation + 2 per item
             if (isset($data['user_id'])) {
                 $donor = User::find($data['user_id']);
-                $donor?->addPoints(10 + (count($items) * 2));
+                $perDonation = Setting::getInt('donor_points_per_donation', 10);
+                $perItem = Setting::getInt('donor_points_per_item', 2);
+                $donor?->addPoints($perDonation + (count($items) * $perItem));
             }
 
             return $donation->load('items');
@@ -51,6 +56,12 @@ class DonationService
         return DB::transaction(function () use ($id, $data) {
             $items = $data['items'] ?? null;
             unset($data['items']);
+
+            if (isset($data['delivery_volunteers_needed']) || isset($data['packaging_volunteers_needed'])) {
+                $donation = $this->donationRepository->findOrFail($id);
+                $data['volunteers_needed'] = ($data['delivery_volunteers_needed'] ?? $donation->delivery_volunteers_needed)
+                                           + ($data['packaging_volunteers_needed'] ?? $donation->packaging_volunteers_needed);
+            }
 
             $donation = $this->donationRepository->findOrFail($id);
 
@@ -140,6 +151,10 @@ class DonationService
 
         if (!empty($filters['date_to'])) {
             $query->where('pickup_time', '<=', $filters['date_to'] . ' 23:59:59');
+        }
+
+        if (!empty($filters['volunteer_type'])) {
+            $query->needsVolunteerType($filters['volunteer_type']);
         }
 
         return $query->paginate(12);

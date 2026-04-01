@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Donation;
 use App\Services\DonationService;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -12,7 +13,8 @@ use Yajra\DataTables\Facades\DataTables;
 class DonationController extends Controller
 {
     public function __construct(
-        protected DonationService $donationService
+        protected DonationService $donationService,
+        protected NotificationService $notificationService
     ) {}
 
     public function index()
@@ -49,6 +51,11 @@ class DonationController extends Controller
         ]);
 
         $this->donationService->updateStatus($id, $request->input('status'));
+
+        $donation = Donation::find($id);
+        if ($donation) {
+            $this->notificationService->notifyDonationStatusChanged($donation);
+        }
 
         return response()->json(['message' => __('Donation status updated.')]);
     }

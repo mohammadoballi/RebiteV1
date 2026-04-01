@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\DonationAssignment;
 use App\Models\Role;
+use App\Models\Setting;
 use App\Models\User;
 use App\Repositories\DonationAssignmentRepository;
 use Illuminate\Database\Eloquent\Collection;
@@ -12,7 +13,8 @@ use Illuminate\Database\Eloquent\Model;
 class AssignmentService
 {
     public function __construct(
-        protected DonationAssignmentRepository $assignmentRepository
+        protected DonationAssignmentRepository $assignmentRepository,
+        protected NotificationService $notificationService
     ) {}
 
     public function assignVolunteer(int $donationId, int $volunteerId, string $type): Model
@@ -65,7 +67,8 @@ class AssignmentService
         ]);
 
         if ($result && $assignment->volunteer_id) {
-            User::find($assignment->volunteer_id)?->addPoints(5);
+            User::find($assignment->volunteer_id)?->addPoints(Setting::getInt('volunteer_pickup_points', 5));
+            $this->notificationService->notifyPickedUp($assignment);
         }
 
         return $result;
@@ -81,7 +84,8 @@ class AssignmentService
 
         if ($result && $assignment->volunteer_id) {
             $volunteer = User::find($assignment->volunteer_id);
-            $volunteer?->addPoints(25);
+            $volunteer?->addPoints(Setting::getInt('volunteer_delivery_points', 25));
+            $this->notificationService->notifyDelivered($assignment);
         }
 
         return $result;

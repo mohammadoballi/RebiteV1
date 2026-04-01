@@ -482,28 +482,9 @@
                     </div>
                 </div>
 
-                {{-- Volunteer: Type --}}
+                {{-- Volunteer: default role_type=delivery (set via hidden input) --}}
                 <div class="col-12 role-section" id="volunteer-fields" style="display:none;">
-                    <div class="role-fields">
-                        <label class="form-label">{{ __('auth_page.volunteer_type') }} <span class="text-danger">*</span></label>
-                        <div class="d-flex gap-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="volunteer_type" id="vt_delivery"
-                                       value="delivery" {{ old('volunteer_type') == 'delivery' ? 'checked' : '' }}>
-                                <label class="form-check-label" for="vt_delivery">
-                                    <i class="fas fa-truck me-1"></i>{{ __('auth_page.delivery') }}
-                                </label>
-                            </div>
-                            <div class="form-check">
-                                <input class="form-check-input" type="radio" name="volunteer_type" id="vt_packaging"
-                                       value="packaging" {{ old('volunteer_type') == 'packaging' ? 'checked' : '' }}>
-                                <label class="form-check-label" for="vt_packaging">
-                                    <i class="fas fa-box me-1"></i>{{ __('auth_page.packaging') }}
-                                </label>
-                            </div>
-                        </div>
-                        @error('volunteer_type')<div class="text-danger small mt-1">{{ $message }}</div>@enderror
-                    </div>
+                    <input type="hidden" name="role_type" value="delivery">
                 </div>
 
                 {{-- City --}}

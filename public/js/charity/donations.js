@@ -1,20 +1,7 @@
 /**
- * Charity - Browse & Request Donations
+ * Charity - Browse & Request Donations + My Requests
  */
 $(document).ready(function() {
-    // Available donations table
-    if ($('#available-donations-table').length) {
-        let availableTable = initDataTable('available-donations-table', window.routes.donationsDatatable, [
-            { data: 'id', name: 'id' },
-            { data: 'donor_name', name: 'donor.name' },
-            { data: 'food_type', name: 'food_type' },
-            { data: 'quantity', name: 'quantity' },
-            { data: 'pickup_address', name: 'pickup_address' },
-            { data: 'pickup_time', name: 'pickup_time' },
-            { data: 'actions', name: 'actions', orderable: false, searchable: false }
-        ]);
-    }
-
     // My requests table
     if ($('#my-requests-table').length) {
         let requestsTable = initDataTable('my-requests-table', window.routes.myRequestsDatatable, [
@@ -27,39 +14,56 @@ $(document).ready(function() {
         ]);
     }
 
-    // View donation details
-    $(document).on('click', '.btn-view-donation', function() {
-        let donationId = $(this).data('id');
+    // View approved request - show donation with rate buttons
+    $(document).on('click', '.btn-view-request', function() {
+        let donationId = $(this).data('donation-id');
+        if (!window.routes.donationsShow) return;
+
         $.get(window.routes.donationsShow.replace(':id', donationId), function(data) {
-            let modal = $('#viewDonationModal');
-            modal.find('#view-food-type').text(data.food_type);
-            modal.find('#view-quantity').text(data.quantity + ' ' + data.quantity_unit);
-            modal.find('#view-address').text(data.pickup_address);
-            modal.find('#view-pickup-time').text(data.pickup_time);
-            modal.find('#view-description').text(data.description || '-');
-            modal.find('#view-donor').text(data.donor ? data.donor.name : '-');
-            if (data.image) {
-                modal.find('#view-image').html('<img src="/' + data.image + '" class="img-fluid rounded" style="max-height:200px">');
-            } else {
-                modal.find('#view-image').html('-');
+            let modal = $('#viewRequestModal');
+
+            let html = '<div class="row g-3">';
+            html += '<div class="col-md-6"><strong>Food:</strong> ' + (data.food_type || '-') + '</div>';
+            html += '<div class="col-md-6"><strong>Status:</strong> ' + data.status + '</div>';
+
+            if (data.items && data.items.length > 0) {
+                html += '<div class="col-12"><strong>Items:</strong><ul class="mb-0">';
+                data.items.forEach(function(i) {
+                    html += '<li>' + i.food_type + ' — ' + i.quantity + ' ' + i.quantity_unit + '</li>';
+                });
+                html += '</ul></div>';
             }
-            modal.find('#request-donation-id').val(data.id);
+
+            html += '<div class="col-12"><strong>Address:</strong> ' + (data.pickup_address || '-') + '</div>';
+            html += '</div>';
+            modal.find('#req-donation-details').html(html);
+
+            // Rate section: show donor and volunteers for completed donations
+            let rateHtml = '';
+            if (data.donor) {
+                rateHtml += '<div class="d-flex justify-content-between align-items-center border-bottom py-2">';
+                rateHtml += '<div><i class="fas fa-hand-holding-heart text-success me-1"></i> <strong>' + data.donor.name + '</strong> <span class="badge bg-info ms-1">Donor</span></div>';
+                rateHtml += '<button class="btn btn-sm btn-outline-warning" onclick="openRateModal(' + data.donor.id + ', \'' + data.donor.name.replace(/'/g, "\\'") + '\')"><i class="fas fa-star me-1"></i> Rate</button>';
+                rateHtml += '</div>';
+            }
+            if (data.assignments && data.assignments.length > 0) {
+                data.assignments.forEach(function(a) {
+                    if (a.volunteer) {
+                        rateHtml += '<div class="d-flex justify-content-between align-items-center border-bottom py-2">';
+                        rateHtml += '<div><i class="fas fa-user-circle text-success me-1"></i> <strong>' + a.volunteer.name + '</strong> <span class="badge bg-primary ms-1">Volunteer</span></div>';
+                        rateHtml += '<button class="btn btn-sm btn-outline-warning" onclick="openRateModal(' + a.volunteer.id + ', \'' + a.volunteer.name.replace(/'/g, "\\'") + '\')"><i class="fas fa-star me-1"></i> Rate</button>';
+                        rateHtml += '</div>';
+                    }
+                });
+            }
+            if (rateHtml) {
+                modal.find('#req-rateable-list').html(rateHtml);
+                modal.find('#req-rate-section').show();
+            } else {
+                modal.find('#req-rate-section').hide();
+            }
+
             modal.modal('show');
         });
-    });
-
-    // Request donation
-    $(document).on('click', '#btn-request-donation', function() {
-        let donationId = $('#request-donation-id').val();
-        let message = $('#request-message').val();
-        
-        confirmAction(
-            window.routes.donationsRequest.replace(':id', donationId),
-            'POST',
-            { message: message },
-            'Are you sure you want to request this donation?',
-            'available-donations-table'
-        );
-        $('#viewDonationModal').modal('hide');
     });
 });

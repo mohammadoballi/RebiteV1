@@ -119,6 +119,19 @@
                             <label for="address" class="form-label">{{ __('Address') }}</label>
                             <textarea class="form-control" id="address" name="address" rows="3">{{ $user->address }}</textarea>
                         </div>
+                        @if(auth()->user()->hasRole('volunteer'))
+                        <div class="col-md-6">
+                            <label for="role_type" class="form-label">{{ __('auth_page.volunteer_type') }}</label>
+                            <select class="form-select" id="role_type" name="role_type">
+                                <option value="delivery" {{ $user->role_type === 'delivery' ? 'selected' : '' }}>
+                                    <i class="fas fa-truck me-1"></i>{{ __('auth_page.delivery') }}
+                                </option>
+                                <option value="packaging" {{ $user->role_type === 'packaging' ? 'selected' : '' }}>
+                                    {{ __('auth_page.packaging') }}
+                                </option>
+                            </select>
+                        </div>
+                        @endif
                         <div class="col-12 text-end">
                             <button type="submit" class="btn btn-success" id="btn-save-profile">
                                 <i class="fas fa-save me-1"></i> {{ __('general.save') }}
@@ -172,7 +185,11 @@
                 <ul class="list-unstyled mb-0">
                     <li class="d-flex justify-content-between align-items-center py-3 border-bottom">
                         <span class="text-muted"><i class="fas fa-user-tag me-2"></i>{{ __('Role') }}</span>
-                        <span class="badge bg-success fs-6">{{ ucfirst($user->role_type) }}</span>
+                        @if($user->hasRole('volunteer'))
+                            <span class="badge bg-success fs-6">{{ $user->role_type === 'packaging' ? __('auth_page.packaging') : __('auth_page.delivery') }}</span>
+                        @else
+                            <span class="badge bg-success fs-6">{{ $user->roles->pluck('display_name')->filter()->implode(', ') ?: '-' }}</span>
+                        @endif
                     </li>
                     <li class="d-flex justify-content-between align-items-center py-3 border-bottom">
                         <span class="text-muted"><i class="fas fa-circle-check me-2"></i>{{ __('general.status') }}</span>

@@ -24,6 +24,10 @@ class RegisterController extends Controller
     {
         $data = $request->validated();
 
+        if (($data['role'] ?? '') === 'volunteer' && empty($data['role_type'])) {
+            $data['role_type'] = 'delivery';
+        }
+
         if ($request->hasFile('health_certificate')) {
             $data['health_certificate'] = $request->file('health_certificate')
                 ->store('certificates', 'public');

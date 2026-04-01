@@ -10,6 +10,7 @@ return [
     'reject' => 'رفض',
     'rejection_reason' => 'سبب الرفض',
     'health_certificate' => 'الشهادة الصحية',
+    'organization_license' => 'رخصة المنظمة',
     'manage_users' => 'إدارة المستخدمين',
     'user_details' => 'تفاصيل المستخدم',
     'edit_user' => 'تعديل المستخدم',

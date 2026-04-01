@@ -105,6 +105,14 @@
                             </a>
                         </div>
                     </div>
+                    <div class="col-12" id="organization-license-row" style="display:none">
+                        <div class="p-2 rounded bg-light">
+                            <small class="text-muted d-block">{{ __('users.organization_license') }}</small>
+                            <a href="#" id="user-organization-license" target="_blank" class="btn btn-sm btn-outline-success mt-1">
+                                <i class="fas fa-file-contract me-1"></i> {{ __('general.view') }}
+                            </a>
+                        </div>
+                    </div>
                     <div class="col-12" id="rejection-reason-row" style="display:none">
                         <div class="p-2 rounded bg-danger bg-opacity-10">
                             <small class="text-muted d-block">{{ __('users.rejection_reason') }}</small>

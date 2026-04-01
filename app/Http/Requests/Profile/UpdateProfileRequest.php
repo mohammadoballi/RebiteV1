@@ -20,7 +20,8 @@ class UpdateProfileRequest extends FormRequest
             'city'    => ['nullable', 'string'],
             'city_id' => ['nullable', 'exists:cities,id'],
             'town_id' => ['nullable', 'exists:towns,id'],
-            'avatar'  => ['nullable', 'image', 'max:2048'],
+            'avatar'    => ['nullable', 'image', 'max:2048'],
+            'role_type' => ['nullable', 'in:delivery,packaging'],
         ];
     }
 }

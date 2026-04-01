@@ -40,7 +40,12 @@ class UserService
 
     public function updateProfile(int $id, array $data): bool
     {
-        unset($data['password'], $data['status'], $data['role_type']);
+        unset($data['password'], $data['status']);
+
+        $user = $this->userRepository->findOrFail($id);
+        if (!$user->hasRole('volunteer')) {
+            unset($data['role_type']);
+        }
 
         return $this->userRepository->update($id, $data);
     }

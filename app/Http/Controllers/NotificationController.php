@@ -13,6 +13,11 @@ class NotificationController extends Controller
             ->latest()
             ->paginate(20);
 
+        $notifications->through(function ($n) {
+            $n->created_at_human = $n->created_at?->diffForHumans();
+            return $n;
+        });
+
         return response()->json($notifications);
     }
 

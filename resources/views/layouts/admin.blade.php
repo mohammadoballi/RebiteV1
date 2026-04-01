@@ -238,9 +238,17 @@
            href="{{ route('admin.donations.index') }}">
             <i class="fas fa-hand-holding-heart"></i> {{ __('donations.title') }}
         </a>
+        <a class="nav-link {{ request()->routeIs('admin.donation-requests.*') ? 'active' : '' }}"
+           href="{{ route('admin.donation-requests.index') }}">
+            <i class="fas fa-clipboard-check"></i> {{ __('Donation Requests') }}
+        </a>
         <a class="nav-link {{ request()->routeIs('admin.reports*') ? 'active' : '' }}"
            href="{{ route('admin.reports') }}">
             <i class="fas fa-chart-bar"></i> {{ __('Reports') }}
+        </a>
+        <a class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}"
+           href="{{ route('admin.settings.index') }}">
+            <i class="fas fa-cogs"></i> {{ __('Settings') }}
         </a>
     </nav>
 </aside>

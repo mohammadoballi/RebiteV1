@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\NotificationService;
 use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,7 +13,8 @@ use Yajra\DataTables\Facades\DataTables;
 class UserController extends Controller
 {
     public function __construct(
-        protected UserService $userService
+        protected UserService $userService,
+        protected NotificationService $notificationService
     ) {}
 
     public function index()
@@ -83,6 +85,11 @@ class UserController extends Controller
     {
         $this->userService->approve($id);
 
+        $user = User::find($id);
+        if ($user) {
+            $this->notificationService->notifyUserApproved($user);
+        }
+
         return response()->json(['message' => __('User approved successfully.')]);
     }
 
@@ -93,6 +100,11 @@ class UserController extends Controller
         ]);
 
         $this->userService->reject($id, $request->input('reason'));
+
+        $user = User::find($id);
+        if ($user) {
+            $this->notificationService->notifyUserRejected($user, $request->input('reason'));
+        }
 
         return response()->json(['message' => __('User rejected.')]);
     }

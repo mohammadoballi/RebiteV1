@@ -8,13 +8,15 @@ use App\Http\Requests\Donation\UpdateDonationRequest;
 use App\Models\City;
 use App\Models\Donation;
 use App\Services\DonationService;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Yajra\DataTables\Facades\DataTables;
 
 class DonationController extends Controller
 {
     public function __construct(
-        protected DonationService $donationService
+        protected DonationService $donationService,
+        protected NotificationService $notificationService
     ) {}
 
     public function index()
@@ -35,7 +37,10 @@ class DonationController extends Controller
             })
             ->addColumn('volunteer_info', function (Donation $d) {
                 $color = $d->volunteers_count >= $d->volunteers_needed ? 'success' : 'warning';
-                return '<span class="badge bg-'.$color.'">'.$d->volunteers_count.'/'.$d->volunteers_needed.'</span>';
+                $delivery = $d->delivery_volunteers_needed ?? 0;
+                $packaging = $d->packaging_volunteers_needed ?? 0;
+                return '<span class="badge bg-'.$color.'">'.$d->volunteers_count.'/'.$d->volunteers_needed.'</span>'
+                     . '<br><small class="text-muted"><i class="fas fa-truck"></i> '.$delivery.' · <i class="fas fa-box"></i> '.$packaging.'</small>';
             })
             ->addColumn('actions', function (Donation $d) {
                 $btns = '<button class="btn btn-sm btn-outline-success btn-view-donation" data-id="'.$d->id.'" title="View"><i class="fas fa-eye"></i></button> ';
@@ -59,6 +64,8 @@ class DonationController extends Controller
         }
 
         $donation = $this->donationService->create($data);
+
+        $this->notificationService->notifyAdminsNewDonation($donation);
 
         return response()->json([
             'message'  => __('Donation created successfully.'),

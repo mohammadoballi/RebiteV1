@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Rating;
+use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -40,7 +41,7 @@ class RatingController extends Controller
                 'comment'       => $request->comment,
             ]);
 
-            $targetUser->addPoints(3);
+            $targetUser->addPoints(Setting::getInt('volunteer_rating_points', 3));
             $msg = __('Rating submitted successfully.');
         }
 

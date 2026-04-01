@@ -29,6 +29,8 @@ return [
     'bags' => 'أكياس',
     'plates' => 'أطباق',
     'volunteers_needed' => 'المتطوعين المطلوبين',
+    'delivery_volunteers' => 'متطوعي التوصيل',
+    'packaging_volunteers' => 'متطوعي التغليف',
     'food_items' => 'أصناف الطعام',
     'add_item' => 'إضافة صنف',
     'donation_details' => 'تفاصيل التبرع',

@@ -40,6 +40,13 @@ $(document).ready(function() {
                 modal.find('#health-certificate-row').hide();
             }
 
+            if (data.organization_license) {
+                modal.find('#user-organization-license').attr('href', '/storage/' + data.organization_license);
+                modal.find('#organization-license-row').show();
+            } else {
+                modal.find('#organization-license-row').hide();
+            }
+
             if (data.status === 'rejected' && data.rejection_reason) {
                 modal.find('#user-rejection-reason').text(data.rejection_reason);
                 modal.find('#rejection-reason-row').show();
