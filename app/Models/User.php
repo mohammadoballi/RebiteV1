@@ -30,6 +30,7 @@ class User extends Authenticatable implements LaratrustUser
         'town_id',
         'role_type',
         'health_certificate',
+        'id_file',
         'organization_name',
         'organization_license',
         'rejection_reason',

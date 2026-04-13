@@ -43,7 +43,7 @@ $(document).ready(function() {
             if (data.donor) {
                 rateHtml += '<div class="d-flex justify-content-between align-items-center border-bottom py-2">';
                 rateHtml += '<div><i class="fas fa-hand-holding-heart text-success me-1"></i> <strong>' + data.donor.name + '</strong> <span class="badge bg-info ms-1">Donor</span></div>';
-                rateHtml += '<button class="btn btn-sm btn-outline-warning" onclick="openRateModal(' + data.donor.id + ', \'' + data.donor.name.replace(/'/g, "\\'") + '\')"><i class="fas fa-star me-1"></i> Rate</button>';
+                rateHtml += '<button class="btn btn-sm btn-outline-warning" onclick="openRateModal(' + data.donor.id + ', \'' + data.donor.name.replace(/'/g, "\\'") + '\', \'donor\')"><i class="fas fa-star me-1"></i> Rate</button>';
                 rateHtml += '</div>';
             }
             if (data.assignments && data.assignments.length > 0) {
@@ -51,7 +51,7 @@ $(document).ready(function() {
                     if (a.volunteer) {
                         rateHtml += '<div class="d-flex justify-content-between align-items-center border-bottom py-2">';
                         rateHtml += '<div><i class="fas fa-user-circle text-success me-1"></i> <strong>' + a.volunteer.name + '</strong> <span class="badge bg-primary ms-1">Volunteer</span></div>';
-                        rateHtml += '<button class="btn btn-sm btn-outline-warning" onclick="openRateModal(' + a.volunteer.id + ', \'' + a.volunteer.name.replace(/'/g, "\\'") + '\')"><i class="fas fa-star me-1"></i> Rate</button>';
+                        rateHtml += '<button class="btn btn-sm btn-outline-warning" onclick="openRateModal(' + a.volunteer.id + ', \'' + a.volunteer.name.replace(/'/g, "\\'") + '\', \'volunteer\')"><i class="fas fa-star me-1"></i> Rate</button>';
                         rateHtml += '</div>';
                     }
                 });

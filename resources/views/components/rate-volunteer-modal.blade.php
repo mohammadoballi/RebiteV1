@@ -3,7 +3,7 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow">
             <div class="modal-header" style="background: linear-gradient(135deg, #198754, #20c997); color: white;">
-                <h5 class="modal-title"><i class="fas fa-star me-2"></i>{{ __('Rate Volunteer') }}</h5>
+                <h5 class="modal-title" id="rate-modal-title"><i class="fas fa-star me-2"></i>{{ __('Rate Volunteer') }}</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -36,31 +36,54 @@
     </div>
 </div>
 
+<style>
+    #star-rating .fa-star { transition: color .15s; }
+</style>
 <script>
-$(document).ready(function() {
-    // Star hover and click
-    $('#star-rating .fa-star').on('mouseenter', function() {
-        let val = $(this).data('value');
-        $('#star-rating .fa-star').each(function() {
-            $(this).toggleClass('text-warning', $(this).data('value') <= val);
-            $(this).toggleClass('text-muted', $(this).data('value') > val);
-        });
+function updateStars(val) {
+    document.querySelectorAll('#star-rating .fa-star').forEach(function(star) {
+        var sv = parseInt(star.getAttribute('data-value'));
+        if (sv <= val) {
+            star.classList.remove('text-muted');
+            star.classList.add('text-warning');
+        } else {
+            star.classList.remove('text-warning');
+            star.classList.add('text-muted');
+        }
     });
+}
 
-    $('#star-rating').on('mouseleave', function() {
-        let selected = parseInt($('#rate-value').val());
-        $('#star-rating .fa-star').each(function() {
-            $(this).toggleClass('text-warning', $(this).data('value') <= selected);
-            $(this).toggleClass('text-muted', $(this).data('value') > selected);
-        });
-    });
+document.addEventListener('mouseover', function(e) {
+    var star = e.target.closest('#star-rating .fa-star');
+    if (star) {
+        updateStars(parseInt(star.getAttribute('data-value')));
+    }
+});
 
-    $('#star-rating .fa-star').on('click', function() {
-        $('#rate-value').val($(this).data('value'));
-    });
+document.addEventListener('mouseout', function(e) {
+    var star = e.target.closest('#star-rating .fa-star');
+    if (star) {
+        var container = document.getElementById('star-rating');
+        var related = e.relatedTarget;
+        if (container && !container.contains(related)) {
+            var selected = parseInt(document.getElementById('rate-value').value) || 0;
+            updateStars(selected);
+        }
+    }
+});
 
+document.addEventListener('click', function(e) {
+    var star = e.target.closest('#star-rating .fa-star');
+    if (star) {
+        var val = parseInt(star.getAttribute('data-value'));
+        document.getElementById('rate-value').value = val;
+        updateStars(val);
+    }
+});
+
+$(function() {
     // Submit rating
-    $('#btn-submit-rating').on('click', function() {
+    $(document).on('click', '#btn-submit-rating', function() {
         let rating = parseInt($('#rate-value').val());
         if (rating < 1) {
             showError('Please select a rating');
@@ -92,12 +115,14 @@ $(document).ready(function() {
     });
 });
 
-function openRateModal(volunteerId, volunteerName) {
-    $('#rate-volunteer-id').val(volunteerId);
-    $('#rate-volunteer-name').text(volunteerName);
-    $('#rate-value').val(0);
-    $('#rate-comment').val('');
-    $('#star-rating .fa-star').removeClass('text-warning').addClass('text-muted');
+function openRateModal(volunteerId, volunteerName, role) {
+    document.getElementById('rate-volunteer-id').value = volunteerId;
+    document.getElementById('rate-volunteer-name').textContent = volunteerName;
+    document.getElementById('rate-value').value = 0;
+    document.getElementById('rate-comment').value = '';
+    updateStars(0);
+    var title = role === 'donor' ? '{{ __("Rate Donor") }}' : '{{ __("Rate Volunteer") }}';
+    document.getElementById('rate-modal-title').innerHTML = '<i class="fas fa-star me-2"></i>' + title;
     $('#rateVolunteerModal').modal('show');
 }
 </script>

@@ -33,6 +33,11 @@ class RegisterController extends Controller
                 ->store('certificates', 'public');
         }
 
+        if ($request->hasFile('id_file')) {
+            $data['id_file'] = $request->file('id_file')
+                ->store('id_files', 'public');
+        }
+
         if ($request->hasFile('organization_license')) {
             $data['organization_license'] = $request->file('organization_license')
                 ->store('licenses', 'public');

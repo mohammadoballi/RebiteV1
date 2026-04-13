@@ -93,6 +93,16 @@
             </div>
 
             <div class="card-body pb-2">
+                @if(!empty($donation->approved_charity_request_exists))
+                    <div class="mb-2">
+                        <span class="badge {{ !empty($donation->charity_linked_assignments_exists) ? 'bg-primary' : 'bg-info text-dark' }}">
+                            <i class="fas fa-hand-holding-heart me-1"></i>{{ __('donations.charity_request_badge') }}
+                            @if(!empty($donation->charity_linked_assignments_exists))
+                                · {{ __('donations.charity_request_has_volunteers') }}
+                            @endif
+                        </span>
+                    </div>
+                @endif
                 <div class="mb-2">
                     @if($donation->items && $donation->items->count() > 0)
                         @foreach($donation->items->take(3) as $item)
@@ -123,9 +133,15 @@
             </div>
 
             <div class="card-footer bg-transparent border-top-0 pt-0">
+                @if(in_array($donation->id, $assignedDonationIds))
+                <button class="btn btn-secondary btn-sm w-100" disabled>
+                    <i class="fas fa-check-circle me-1"></i> {{ __('Assigned') }}
+                </button>
+                @else
                 <button class="btn btn-success btn-sm w-100 btn-assign-me" data-id="{{ $donation->id }}">
                     <i class="fas fa-hand-paper me-1"></i> {{ __('Assign Me') }}
                 </button>
+                @endif
             </div>
         </div>
     </div>
@@ -192,6 +208,9 @@
                             <small class="text-muted d-block">{{ __('donations.pickup_address') }}</small>
                             <span id="modal-address">-</span>
                         </div>
+                        <div id="modal-charity-request-alert" class="alert alert-info py-2 small d-none mb-0">
+                            <i class="fas fa-info-circle me-1"></i><span id="modal-charity-request-text">{{ __('donations.charity_request_modal_note') }}</span>
+                        </div>
                     </div>
                 </div>
 
@@ -218,6 +237,7 @@
         donationsShow: '{{ route("volunteer.donations.show", ":id") }}',
         donationsAssign: '{{ route("volunteer.donations.assign", ":id") }}'
     };
+    window.assignedDonationIds = @json($assignedDonationIds);
 
     // City -> Town dynamic filter
     $('#filter_city_id').on('change', function () {
@@ -272,6 +292,18 @@
             m.find('#modal-volunteer-types').html('<i class="fas fa-truck"></i> ' + (data.delivery_volunteers_needed || 0) + ' · <i class="fas fa-box"></i> ' + (data.packaging_volunteers_needed || 0));
             m.find('#modal-address').text(data.pickup_address || '-');
             m.find('#assign-donation-id').val(data.id);
+
+            if (window.assignedDonationIds.indexOf(data.id) !== -1) {
+                m.find('#btn-confirm-assign').prop('disabled', true).html('<i class="fas fa-check-circle me-1"></i> {{ __('Assigned') }}');
+            } else {
+                m.find('#btn-confirm-assign').prop('disabled', false).html('<i class="fas fa-hand-paper me-1"></i> {{ __("Assign Me") }}');
+            }
+
+            if (data.approved_charity_request_exists || data.charity_linked_assignments_exists) {
+                m.find('#modal-charity-request-alert').removeClass('d-none');
+            } else {
+                m.find('#modal-charity-request-alert').addClass('d-none');
+            }
             m.modal('show');
         });
     }

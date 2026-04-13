@@ -21,6 +21,7 @@ class RegisterRequest extends FormRequest
             'role'                 => ['required', 'in:donor,charity,volunteer'],
             'role_type'            => ['nullable', 'in:delivery,packaging'],
             'health_certificate'   => ['required_if:role,donor', 'file', 'mimes:pdf,jpg,png', 'max:5120'],
+            'id_file'              => ['required_if:role,volunteer', 'file', 'mimes:pdf,jpg,png', 'max:5120'],
             'organization_name'    => ['required_if:role,charity'],
             'organization_license' => ['required_if:role,charity', 'file', 'mimes:pdf,jpg,png', 'max:5120'],
             'address'              => ['nullable', 'string'],

@@ -32,6 +32,19 @@ class UserController extends Controller
 
         return DataTables::eloquent($query)
             ->addColumn('role', fn (User $user) => $user->roles->pluck('display_name')->implode(', '))
+            ->addColumn('city_name', function (User $user) {
+                $parts = [];
+                if ($user->cityRelation) $parts[] = $user->cityRelation->name;
+                if ($user->town) $parts[] = $user->town->name;
+                return $parts ? implode(' / ', $parts) : ($user->city ?: '-');
+            })
+            ->addColumn('subscription_badge', function (User $user) {
+                if (!$user->roles->contains('name', 'charity')) return '-';
+                if ($user->hasActiveSubscription()) {
+                    return '<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Active</span>';
+                }
+                return '<span class="badge bg-secondary"><i class="fas fa-times-circle me-1"></i>Inactive</span>';
+            })
             ->addColumn('status_badge', function (User $user) {
                 $colors = ['pending' => 'warning', 'approved' => 'success', 'rejected' => 'danger'];
                 $color = $colors[$user->status] ?? 'secondary';
@@ -47,13 +60,13 @@ class UserController extends Controller
                 $btns .= '<button class="btn btn-sm btn-outline-danger btn-delete-user" data-id="'.$user->id.'" title="Delete"><i class="fas fa-trash"></i></button>';
                 return $btns;
             })
-            ->rawColumns(['status_badge', 'actions'])
+            ->rawColumns(['status_badge', 'subscription_badge', 'actions'])
             ->toJson();
     }
 
     public function show(int $id): JsonResponse
     {
-        $user = User::with('roles')->findOrFail($id);
+        $user = User::with(['roles', 'cityRelation:id,name', 'town:id,name'])->findOrFail($id);
 
         return response()->json($user);
     }

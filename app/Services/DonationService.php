@@ -113,11 +113,17 @@ class DonationService
         return $this->donationRepository->getDatatableQuery($donorId);
     }
 
-    public function getMarketplaceData(array $filters = [])
+    public function getMarketplaceData(array $filters = [], bool $forVolunteerBrowse = false)
     {
         $query = Donation::available()
             ->with(['donor:id,name,city,city_id,town_id,avatar', 'items', 'cityRelation:id,name', 'town:id,name'])
             ->latest();
+
+        if ($forVolunteerBrowse) {
+            $query->forVolunteerMarketplace()
+                ->withExists('approvedCharityRequest')
+                ->withExists('charityLinkedAssignments');
+        }
 
         if (!empty($filters['search'])) {
             $search = $filters['search'];

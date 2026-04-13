@@ -34,4 +34,7 @@ return [
     'food_items' => 'أصناف الطعام',
     'add_item' => 'إضافة صنف',
     'donation_details' => 'تفاصيل التبرع',
+    'charity_request_badge' => 'طلب جمعية',
+    'charity_request_has_volunteers' => 'متطوعون معيّنون',
+    'charity_request_modal_note' => 'لهذا التبرع طلب جمعية مقبول. المواقع المغطاة عبر ذلك الطلب مخصصة لتنسيق الجمعية.',
 ];

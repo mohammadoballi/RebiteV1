@@ -132,9 +132,15 @@
 
             <div class="card-footer bg-transparent border-top-0 pt-0">
                 @if(auth()->user()->hasActiveSubscription())
-                <button class="btn btn-success btn-sm w-100 btn-request-donation" data-id="{{ $donation->id }}">
-                    <i class="fas fa-hand-holding-heart me-1"></i> {{ __('donations.request_donation') }}
-                </button>
+                    @if(in_array($donation->id, $requestedDonationIds))
+                    <button class="btn btn-secondary btn-sm w-100" disabled>
+                        <i class="fas fa-check-circle me-1"></i> {{ __('Requested') }}
+                    </button>
+                    @else
+                    <button class="btn btn-success btn-sm w-100 btn-request-donation" data-id="{{ $donation->id }}">
+                        <i class="fas fa-hand-holding-heart me-1"></i> {{ __('donations.request_donation') }}
+                    </button>
+                    @endif
                 @else
                 <a href="{{ route('charity.subscription.index') }}" class="btn btn-outline-warning btn-sm w-100">
                     <i class="fas fa-lock me-1"></i> {{ __('Subscribe to Request') }}
@@ -251,6 +257,7 @@
         donationsShow: '{{ route("charity.donations.show", ":id") }}',
         donationsRequest: '{{ route("charity.donations.request", ":id") }}'
     };
+    window.requestedDonationIds = @json($requestedDonationIds);
 
     // City -> Town dynamic filter
     $('#filter_city_id').on('change', function () {
@@ -331,6 +338,15 @@
 
             modal.find('#request-donation-id').val(data.id);
             modal.find('#request-message').val('');
+
+            if (window.requestedDonationIds.indexOf(data.id) !== -1) {
+                modal.find('#btn-submit-request').prop('disabled', true).html('<i class="fas fa-check-circle me-1"></i> {{ __('Requested') }}');
+                modal.find('#request-message').prop('disabled', true);
+            } else {
+                modal.find('#btn-submit-request').prop('disabled', false).html('<i class="fas fa-hand-holding-heart me-1"></i> {{ __("donations.request_donation") }}');
+                modal.find('#request-message').prop('disabled', false);
+            }
+
             modal.modal('show');
         });
     }

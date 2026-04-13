@@ -7,6 +7,8 @@ $(document).ready(function() {
         { data: 'name', name: 'name' },
         { data: 'email', name: 'email' },
         { data: 'role', name: 'role', orderable: false, searchable: false },
+        { data: 'city_name', name: 'city_name', orderable: false, searchable: false },
+        { data: 'subscription_badge', name: 'subscription_badge', orderable: false, searchable: false },
         { data: 'status_badge', name: 'status', orderable: true, searchable: false },
         { data: 'created_at', name: 'created_at' },
         { data: 'actions', name: 'actions', orderable: false, searchable: false }
@@ -30,14 +32,41 @@ $(document).ready(function() {
             modal.find('#user-role').text(data.roles && data.roles.length ? data.roles.map(r => r.display_name).join(', ') : '-');
             modal.find('#user-status').html(getStatusBadge(data.status));
             modal.find('#user-address').text(data.address || '-');
-            modal.find('#user-city').text(data.city || '-');
+
+            // City: use relations if available, fallback to text field
+            var cityParts = [];
+            if (data.city_relation) cityParts.push(data.city_relation.name);
+            if (data.town) cityParts.push(data.town.name);
+            modal.find('#user-city').text(cityParts.length ? cityParts.join(' / ') : (data.city || '-'));
+
             modal.find('#user-organization').text(data.organization_name || '-');
+
+            // Subscription (charity only)
+            var isCharity = data.roles && data.roles.some(function(r) { return r.name === 'charity'; });
+            if (isCharity) {
+                var isActive = data.subscription_status === 'active' || (data.subscription_ends_at && new Date(data.subscription_ends_at) > new Date());
+                if (isActive) {
+                    modal.find('#user-subscription').html('<span class="badge bg-success"><i class="fas fa-check-circle me-1"></i>Active</span>');
+                } else {
+                    modal.find('#user-subscription').html('<span class="badge bg-secondary"><i class="fas fa-times-circle me-1"></i>Inactive</span>');
+                }
+                modal.find('#subscription-row').show();
+            } else {
+                modal.find('#subscription-row').hide();
+            }
 
             if (data.health_certificate) {
                 modal.find('#user-health-certificate').attr('href', '/storage/' + data.health_certificate);
                 modal.find('#health-certificate-row').show();
             } else {
                 modal.find('#health-certificate-row').hide();
+            }
+
+            if (data.id_file) {
+                modal.find('#user-id-file').attr('href', '/storage/' + data.id_file);
+                modal.find('#id-file-row').show();
+            } else {
+                modal.find('#id-file-row').hide();
             }
 
             if (data.organization_license) {

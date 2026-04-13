@@ -46,6 +46,9 @@
                        class="form-control @error('password') is-invalid @enderror"
                        placeholder="{{ __('auth_page.password') }}"
                        required>
+                <button class="btn btn-outline-secondary toggle-password" type="button" data-target="#password">
+                    <i class="fas fa-eye"></i>
+                </button>
                 @error('password')
                     <div class="invalid-feedback">{{ $message }}</div>
                 @enderror
@@ -79,4 +82,22 @@
 
 @push('styles')
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+@endpush
+
+@push('scripts')
+<script>
+$(function() {
+    $('.toggle-password').on('click', function() {
+        var input = $($(this).data('target'));
+        var icon = $(this).find('i');
+        if (input.attr('type') === 'password') {
+            input.attr('type', 'text');
+            icon.removeClass('fa-eye').addClass('fa-eye-slash');
+        } else {
+            input.attr('type', 'password');
+            icon.removeClass('fa-eye-slash').addClass('fa-eye');
+        }
+    });
+});
+</script>
 @endpush

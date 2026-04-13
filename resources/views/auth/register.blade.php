@@ -434,6 +434,9 @@
                         <input type="password" id="password" name="password"
                                class="form-control @error('password') is-invalid @enderror"
                                placeholder="{{ __('auth_page.password') }}" required>
+                        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="#password">
+                            <i class="fas fa-eye"></i>
+                        </button>
                         @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
                     </div>
                 </div>
@@ -445,6 +448,9 @@
                         <span class="input-group-text"><i class="fas fa-lock"></i></span>
                         <input type="password" id="password_confirmation" name="password_confirmation"
                                class="form-control" placeholder="{{ __('auth_page.confirm_password') }}" required>
+                        <button class="btn btn-outline-secondary toggle-password" type="button" data-target="#password_confirmation">
+                            <i class="fas fa-eye"></i>
+                        </button>
                     </div>
                 </div>
 
@@ -482,8 +488,16 @@
                     </div>
                 </div>
 
-                {{-- Volunteer: default role_type=delivery (set via hidden input) --}}
+                {{-- Volunteer: ID file + default role_type --}}
                 <div class="col-12 role-section" id="volunteer-fields" style="display:none;">
+                    <div class="role-fields">
+                        <label for="id_file" class="form-label">{{ __('auth_page.id_file') }} <span class="text-danger">*</span></label>
+                        <input type="file" id="id_file" name="id_file"
+                               class="form-control @error('id_file') is-invalid @enderror"
+                               accept=".pdf,.jpg,.jpeg,.png">
+                        <small class="text-muted">{{ __('Upload a copy of your national ID or passport.') }}</small>
+                        @error('id_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    </div>
                     <input type="hidden" name="role_type" value="delivery">
                 </div>
 
@@ -663,6 +677,19 @@ $(function () {
                 $town.append('<option value="' + t.id + '" ' + sel + '>' + t.name + '</option>');
             });
         });
+    });
+
+    // Toggle password visibility
+    $('.toggle-password').on('click', function() {
+        var input = $($(this).data('target'));
+        var icon = $(this).find('i');
+        if (input.attr('type') === 'password') {
+            input.attr('type', 'text');
+            icon.removeClass('fa-eye').addClass('fa-eye-slash');
+        } else {
+            input.attr('type', 'password');
+            icon.removeClass('fa-eye-slash').addClass('fa-eye');
+        }
     });
 
     // If old role value exists (validation error), go straight to form

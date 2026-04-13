@@ -45,9 +45,11 @@ class UserRepository extends BaseRepository
 
     public function getDatatableQuery()
     {
-        return $this->query()->with('roles')->select([
+        return $this->query()->with(['roles', 'cityRelation:id,name', 'town:id,name'])->select([
             'id', 'name', 'email', 'phone', 'role_type',
-            'status', 'city', 'created_at',
+            'status', 'city', 'city_id', 'town_id',
+            'subscription_status', 'subscription_ends_at',
+            'created_at',
         ]);
     }
 }

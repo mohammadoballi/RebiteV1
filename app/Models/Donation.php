@@ -78,6 +78,18 @@ class Donation extends Model
         return $this->hasMany(DonationRequest::class);
     }
 
+    public function approvedCharityRequest()
+    {
+        return $this->hasOne(DonationRequest::class)->where('status', DonationRequest::STATUS_APPROVED);
+    }
+
+    public function charityLinkedAssignments()
+    {
+        return $this->hasMany(DonationAssignment::class)
+            ->whereNotNull('donation_request_id')
+            ->where('status', '!=', DonationAssignment::STATUS_CANCELLED);
+    }
+
     public function assignments()
     {
         return $this->hasMany(DonationAssignment::class);
@@ -123,6 +135,38 @@ class Donation extends Model
                            ->orWhere('expiry_time', '>', now());
                      })
                      ->whereColumn('volunteers_count', '<', 'volunteers_needed');
+    }
+
+    /**
+     * Volunteer browse: hide donations where an approved charity request exists and all delivery/packaging
+     * slots are already covered by assignments linked to that request (charity-coordinated volunteers).
+     */
+    public function scopeForVolunteerMarketplace($query)
+    {
+        $approved = DonationRequest::STATUS_APPROVED;
+        $cancelled = DonationAssignment::STATUS_CANCELLED;
+        $delivery = DonationAssignment::TYPE_DELIVERY;
+        $packaging = DonationAssignment::TYPE_PACKAGING;
+
+        return $query->where(function ($q) use ($approved, $cancelled, $delivery, $packaging) {
+            $q->whereDoesntHave('requests', fn ($r) => $r->where('status', $approved))
+                ->orWhereRaw('NOT (
+                (donations.delivery_volunteers_needed = 0 OR (
+                    SELECT COUNT(*) FROM donation_assignments da
+                    INNER JOIN donation_requests dr ON dr.id = da.donation_request_id AND dr.status = ?
+                    WHERE da.donation_id = donations.id AND da.assignment_type = ? AND da.status <> ?
+                ) >= donations.delivery_volunteers_needed)
+                AND
+                (donations.packaging_volunteers_needed = 0 OR (
+                    SELECT COUNT(*) FROM donation_assignments da
+                    INNER JOIN donation_requests dr ON dr.id = da.donation_request_id AND dr.status = ?
+                    WHERE da.donation_id = donations.id AND da.assignment_type = ? AND da.status <> ?
+                ) >= donations.packaging_volunteers_needed)
+            )', [
+                $approved, $delivery, $cancelled,
+                $approved, $packaging, $cancelled,
+            ]);
+        });
     }
 
     public function scopeNotFull($query)

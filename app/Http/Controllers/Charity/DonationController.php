@@ -35,7 +35,12 @@ class DonationController extends Controller
             $towns = Town::where('city_id', $selectedCityId)->orderBy('name')->get();
         }
 
-        return view('charity.donations.index', compact('donations', 'filters', 'cities', 'towns'));
+        $requestedDonationIds = DonationRequest::where('charity_id', auth()->id())
+            ->whereIn('status', ['pending', 'approved'])
+            ->pluck('donation_id')
+            ->toArray();
+
+        return view('charity.donations.index', compact('donations', 'filters', 'cities', 'towns', 'requestedDonationIds'));
     }
 
     public function show(int $id): JsonResponse

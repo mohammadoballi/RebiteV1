@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\Donation;
 use App\Models\DonationAssignment;
+use App\Models\DonationRequest;
 use App\Models\Setting;
 use App\Models\Town;
 use App\Services\DonationService;
@@ -36,7 +37,7 @@ class DonationController extends Controller
 
         $volunteerType = $user->role_type ?? 'delivery';
         $filters['volunteer_type'] = $volunteerType;
-        $donations = $this->donationService->getMarketplaceData($filters);
+        $donations = $this->donationService->getMarketplaceData($filters, forVolunteerBrowse: true);
 
         $cities = City::orderBy('name')->get();
         $towns = [];
@@ -45,12 +46,25 @@ class DonationController extends Controller
             $towns = Town::where('city_id', $selectedCityId)->orderBy('name')->get();
         }
 
-        return view('volunteer.donations.index', compact('donations', 'filters', 'cities', 'towns'));
+        $assignedDonationIds = DonationAssignment::where('volunteer_id', auth()->id())
+            ->whereIn('status', ['pending', 'accepted', 'in_progress'])
+            ->pluck('donation_id')
+            ->toArray();
+
+        return view('volunteer.donations.index', compact('donations', 'filters', 'cities', 'towns', 'assignedDonationIds'));
     }
 
     public function show(int $id): JsonResponse
     {
-        $donation = Donation::with(['donor:id,name,city,city_id,town_id,phone,avatar', 'items', 'cityRelation:id,name', 'town:id,name'])->findOrFail($id);
+        $donation = Donation::with([
+            'donor:id,name,city,city_id,town_id,phone,avatar',
+            'items',
+            'cityRelation:id,name',
+            'town:id,name',
+        ])
+            ->withExists('approvedCharityRequest')
+            ->withExists('charityLinkedAssignments')
+            ->findOrFail($id);
 
         return response()->json($donation);
     }
@@ -80,11 +94,16 @@ class DonationController extends Controller
 
         $type = auth()->user()->role_type ?? 'delivery';
 
+        $approvedRequest = DonationRequest::where('donation_id', $donation->id)
+            ->where('status', DonationRequest::STATUS_APPROVED)
+            ->first();
+
         $assignment = DonationAssignment::create([
-            'donation_id'     => $donation->id,
-            'volunteer_id'    => auth()->id(),
-            'assignment_type' => $type,
-            'status'          => 'accepted',
+            'donation_id'          => $donation->id,
+            'donation_request_id'   => $approvedRequest?->id,
+            'volunteer_id'         => auth()->id(),
+            'assignment_type'      => $type,
+            'status'               => 'accepted',
         ]);
 
         $donation->increment('volunteers_count');

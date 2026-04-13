@@ -15,6 +15,7 @@ return [
     'charity' => 'جمعية خيرية',
     'volunteer' => 'متطوع',
     'health_certificate' => 'الشهادة الصحية',
+    'id_file' => 'ملف الهوية',
     'organization_name' => 'اسم المنظمة',
     'organization_license' => 'رخصة المنظمة',
     'address' => 'العنوان',

@@ -26,6 +26,8 @@
                         <th>{{ __('users.name') }}</th>
                         <th>{{ __('users.email') }}</th>
                         <th>{{ __('users.role') }}</th>
+                        <th>{{ __('City') }}</th>
+                        <th>{{ __('Subscription') }}</th>
                         <th>{{ __('users.status') }}</th>
                         <th>{{ __('Created At') }}</th>
                         <th>{{ __('general.actions') }}</th>
@@ -97,11 +99,25 @@
                             <strong id="user-organization">-</strong>
                         </div>
                     </div>
+                    <div class="col-md-6" id="subscription-row" style="display:none">
+                        <div class="p-2 rounded bg-light">
+                            <small class="text-muted d-block">{{ __('Subscription') }}</small>
+                            <span id="user-subscription">-</span>
+                        </div>
+                    </div>
                     <div class="col-12" id="health-certificate-row" style="display:none">
                         <div class="p-2 rounded bg-light">
                             <small class="text-muted d-block">{{ __('users.health_certificate') }}</small>
                             <a href="#" id="user-health-certificate" target="_blank" class="btn btn-sm btn-outline-success mt-1">
                                 <i class="fas fa-file-medical me-1"></i> {{ __('general.view') }}
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-12" id="id-file-row" style="display:none">
+                        <div class="p-2 rounded bg-light">
+                            <small class="text-muted d-block">{{ __('ID File') }}</small>
+                            <a href="#" id="user-id-file" target="_blank" class="btn btn-sm btn-outline-success mt-1">
+                                <i class="fas fa-id-card me-1"></i> {{ __('general.view') }}
                             </a>
                         </div>
                     </div>

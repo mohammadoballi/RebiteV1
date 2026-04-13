@@ -15,6 +15,7 @@ return [
     'charity' => 'Charity',
     'volunteer' => 'Volunteer',
     'health_certificate' => 'Health Certificate',
+    'id_file' => 'ID File',
     'organization_name' => 'Organization Name',
     'organization_license' => 'Organization License',
     'address' => 'Address',

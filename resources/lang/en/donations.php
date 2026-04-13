@@ -34,4 +34,7 @@ return [
     'food_items' => 'Food Items',
     'add_item' => 'Add Item',
     'donation_details' => 'Donation Details',
+    'charity_request_badge' => 'Charity request',
+    'charity_request_has_volunteers' => 'volunteers assigned',
+    'charity_request_modal_note' => 'This donation has an approved charity request. Volunteer spots filled through that request are coordinated for the charity.',
 ];
