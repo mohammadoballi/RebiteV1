@@ -1,7 +1,7 @@
 <?php
 
 return [
-    'login_title' => 'Sign In',
+    'login_title' => 'Log In',
     'register_title' => 'Create Account',
     'forgot_password' => 'Forgot Password?',
     'remember_me' => 'Remember Me',
@@ -14,7 +14,12 @@ return [
     'donor' => 'Donor',
     'charity' => 'Charity',
     'volunteer' => 'Volunteer',
-    'health_certificate' => 'Health Certificate',
+    'commercial_registration_certificate' => 'Upload Commercial Registration Certificate',
+    'commercial_registration_certificate_note' => 'Note: This document is required to confirm your company\'s legal identity.',
+    'health_certificate' => 'Upload Health Certificate Issued by the Ministry of Health',
+    'health_certificate_note' => 'Note: This certificate is required to verify that your company meets the health and safety standards approved by the Ministry of Health.',
+    'id_document' => 'Upload Identification Document',
+    'id_document_note' => 'Note: This document is required to confirm the volunteer\'s personal identity to ensure secure participation in the platform.',
     'id_file' => 'ID File',
     'organization_name' => 'Organization Name',
     'organization_license' => 'Organization License',
@@ -30,4 +35,10 @@ return [
     'pending_approval' => 'Your account is pending admin approval. You will be notified once approved.',
     'account_rejected' => 'Your account has been rejected.',
     'reset_instructions' => 'Enter your email address and we will send you a link to reset your password.',
+    'password_strength_hint' => 'Use at least 8 characters including one uppercase letter and one number.',
+    'password_req_length' => 'At least 8 characters',
+    'password_req_uppercase' => 'At least one uppercase letter (A–Z)',
+    'password_req_number' => 'At least one number',
+    'password_complexity_client' => 'The password must be at least 8 characters and include at least one uppercase letter and one number.',
+    'password_mismatch' => 'The password confirmation does not match.',
 ];

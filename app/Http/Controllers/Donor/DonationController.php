@@ -59,10 +59,6 @@ class DonationController extends Controller
         $data = $request->validated();
         $data['user_id'] = auth()->id();
 
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('donations', 'public');
-        }
-
         $donation = $this->donationService->create($data);
 
         $this->notificationService->notifyAdminsNewDonation($donation);
@@ -87,10 +83,6 @@ class DonationController extends Controller
         $donation = Donation::where('user_id', auth()->id())->findOrFail($id);
 
         $data = $request->validated();
-
-        if ($request->hasFile('image')) {
-            $data['image'] = $request->file('image')->store('donations', 'public');
-        }
 
         $this->donationService->update($donation->id, $data);
 

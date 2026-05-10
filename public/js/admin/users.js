@@ -62,6 +62,13 @@ $(document).ready(function() {
                 modal.find('#health-certificate-row').hide();
             }
 
+            if (data.commercial_registration_certificate) {
+                modal.find('#user-commercial-registration').attr('href', '/storage/' + data.commercial_registration_certificate);
+                modal.find('#commercial-registration-row').show();
+            } else {
+                modal.find('#commercial-registration-row').hide();
+            }
+
             if (data.id_file) {
                 modal.find('#user-id-file').attr('href', '/storage/' + data.id_file);
                 modal.find('#id-file-row').show();

@@ -41,7 +41,7 @@
                 <h5 class="modal-title" id="donationModalLabel">{{ __('donations.add_donation') }}</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <form id="donationForm" enctype="multipart/form-data">
+            <form id="donationForm">
                 <div class="modal-body">
                     {{-- Food Items Section --}}
                     <div class="mb-4">
@@ -60,11 +60,6 @@
 
                     {{-- Donation Details --}}
                     <div class="row g-3">
-                        <div class="col-md-12">
-                            <label for="description" class="form-label">{{ __('donations.description') }}</label>
-                            <textarea class="form-control" id="description" name="description" rows="2" placeholder="{{ __('General description of the donation...') }}"></textarea>
-                        </div>
-
                         <div class="col-md-6">
                             <label for="donation_city_id" class="form-label">{{ __('City') }}</label>
                             <select class="form-select" id="donation_city_id" name="city_id">
@@ -116,11 +111,6 @@
                         <div class="col-12">
                             <label for="notes" class="form-label">{{ __('donations.notes') }}</label>
                             <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
-                        </div>
-
-                        <div class="col-12">
-                            <label for="image" class="form-label">{{ __('donations.image') }}</label>
-                            <input type="file" class="form-control" id="image" name="image" accept="image/*">
                         </div>
                     </div>
                 </div>

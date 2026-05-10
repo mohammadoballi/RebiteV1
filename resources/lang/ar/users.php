@@ -9,6 +9,7 @@ return [
     'approve' => 'موافقة',
     'reject' => 'رفض',
     'rejection_reason' => 'سبب الرفض',
+    'commercial_registration_certificate' => 'السجل التجاري',
     'health_certificate' => 'الشهادة الصحية',
     'organization_license' => 'رخصة المنظمة',
     'manage_users' => 'إدارة المستخدمين',

@@ -33,6 +33,11 @@ class RegisterController extends Controller
                 ->store('certificates', 'public');
         }
 
+        if ($request->hasFile('commercial_registration_certificate')) {
+            $data['commercial_registration_certificate'] = $request->file('commercial_registration_certificate')
+                ->store('certificates', 'public');
+        }
+
         if ($request->hasFile('id_file')) {
             $data['id_file'] = $request->file('id_file')
                 ->store('id_files', 'public');

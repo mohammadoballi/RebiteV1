@@ -9,6 +9,7 @@ return [
     'approve' => 'Approve',
     'reject' => 'Reject',
     'rejection_reason' => 'Rejection Reason',
+    'commercial_registration_certificate' => 'Commercial Registration Certificate',
     'health_certificate' => 'Health Certificate',
     'organization_license' => 'Organization License',
     'manage_users' => 'Manage Users',

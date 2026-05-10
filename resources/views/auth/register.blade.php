@@ -437,8 +437,14 @@
                         <button class="btn btn-outline-secondary toggle-password" type="button" data-target="#password">
                             <i class="fas fa-eye"></i>
                         </button>
-                        @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        @error('password')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
+                    <small class="text-muted d-block">{{ __('auth_page.password_strength_hint') }}</small>
+                    <ul class="list-unstyled small mt-2 mb-0" id="password-rules-list">
+                        <li data-password-rule="len" class="text-muted"><i class="fas fa-circle me-1 fa-fw"></i>{{ __('auth_page.password_req_length') }}</li>
+                        <li data-password-rule="upper" class="text-muted"><i class="fas fa-circle me-1 fa-fw"></i>{{ __('auth_page.password_req_uppercase') }}</li>
+                        <li data-password-rule="num" class="text-muted"><i class="fas fa-circle me-1 fa-fw"></i>{{ __('auth_page.password_req_number') }}</li>
+                    </ul>
                 </div>
 
                 {{-- Confirm Password --}}
@@ -456,14 +462,23 @@
 
                 {{-- Role-specific fields --}}
 
-                {{-- Donor: Health Certificate --}}
+                {{-- Donor: Commercial registration + Ministry of Health certificate --}}
                 <div class="col-12 role-section" id="donor-fields" style="display:none;">
+                    <div class="role-fields mb-3">
+                        <label for="commercial_registration_certificate" class="form-label">{{ __('auth_page.commercial_registration_certificate') }} <span class="text-danger">*</span></label>
+                        <input type="file" id="commercial_registration_certificate" name="commercial_registration_certificate"
+                               class="form-control @error('commercial_registration_certificate') is-invalid @enderror"
+                               accept=".pdf,.jpg,.jpeg,.png">
+                        <small class="text-muted">{{ __('auth_page.commercial_registration_certificate_note') }}</small>
+                        @error('commercial_registration_certificate')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
+                    </div>
                     <div class="role-fields">
                         <label for="health_certificate" class="form-label">{{ __('auth_page.health_certificate') }} <span class="text-danger">*</span></label>
                         <input type="file" id="health_certificate" name="health_certificate"
                                class="form-control @error('health_certificate') is-invalid @enderror"
                                accept=".pdf,.jpg,.jpeg,.png">
-                        @error('health_certificate')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <small class="text-muted">{{ __('auth_page.health_certificate_note') }}</small>
+                        @error('health_certificate')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
                 </div>
 
@@ -488,15 +503,15 @@
                     </div>
                 </div>
 
-                {{-- Volunteer: ID file + default role_type --}}
+                {{-- Volunteer: Identification document + default role_type --}}
                 <div class="col-12 role-section" id="volunteer-fields" style="display:none;">
                     <div class="role-fields">
-                        <label for="id_file" class="form-label">{{ __('auth_page.id_file') }} <span class="text-danger">*</span></label>
+                        <label for="id_file" class="form-label">{{ __('auth_page.id_document') }} <span class="text-danger">*</span></label>
                         <input type="file" id="id_file" name="id_file"
                                class="form-control @error('id_file') is-invalid @enderror"
                                accept=".pdf,.jpg,.jpeg,.png">
-                        <small class="text-muted">{{ __('Upload a copy of your national ID or passport.') }}</small>
-                        @error('id_file')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                        <small class="text-muted">{{ __('auth_page.id_document_note') }}</small>
+                        @error('id_file')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
                     </div>
                     <input type="hidden" name="role_type" value="delivery">
                 </div>
@@ -577,6 +592,7 @@
                 <ul class="list-unstyled small">
                     <li class="mb-2"><i class="fas fa-map-marker-alt me-2"></i>Amman, Jordan</li>
                     <li class="mb-2"><i class="fas fa-envelope me-2"></i>info@rebite.com</li>
+                    <li class="mb-2"><i class="fas fa-phone me-2"></i>+962 79 284 3165</li>
                 </ul>
             </div>
             <div class="col-lg-4">
@@ -599,6 +615,7 @@
                 <ul class="list-unstyled small">
                     <li class="mb-2"><i class="fas fa-map-marker-alt me-2"></i>Amman, Jordan</li>
                     <li class="mb-2"><i class="fas fa-envelope me-2"></i>info@rebite.com</li>
+                    <li class="mb-2"><i class="fas fa-phone me-2"></i>+962 79 284 3165</li>
                 </ul>
             </div>
         </div>
@@ -702,6 +719,18 @@ $(function () {
     }
 });
 </script>
+
+@php
+    $rebiteRegisterPassword = [
+        'passwordComplexity' => __('auth_page.password_complexity_client'),
+        'passwordMismatch' => __('auth_page.password_mismatch'),
+        'titleError' => __('general.error'),
+    ];
+@endphp
+<script>
+window.RebiteRegisterPassword = @json($rebiteRegisterPassword);
+</script>
+<script src="{{ asset('js/auth/register-password.js') }}"></script>
 
 @if(session('success'))
 <script>Swal.fire({ icon: 'success', title: '{{ __("Success") }}', text: '{{ session("success") }}', confirmButtonColor: '#3a7d44' });</script>

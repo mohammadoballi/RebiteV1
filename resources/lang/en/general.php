@@ -4,7 +4,7 @@ return [
     'app_name' => 'Rebite',
     'home' => 'Home',
     'dashboard' => 'Dashboard',
-    'login' => 'Login',
+    'login' => 'Log In',
     'register' => 'Register',
     'logout' => 'Logout',
     'profile' => 'Profile',
@@ -39,4 +39,5 @@ return [
     'view' => 'View',
     'close' => 'Close',
     'welcome' => 'Welcome',
+    'subscription_required_for_profile' => 'Please subscribe to the association before you can view or manage your profile.',
 ];

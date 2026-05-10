@@ -86,6 +86,7 @@ class DatabaseSeeder extends Seeder
                 'city_id' => $cityId, 'town_id' => $townId,
                 'address' => 'Building ' . rand(1, 120) . ', ' . ($townLabel ?? $cityName),
                 'health_certificate' => 'certificates/sample.pdf',
+                'commercial_registration_certificate' => 'certificates/sample.pdf',
                 'locale' => 'en',
             ]);
             $user->addRole('donor');
@@ -101,7 +102,9 @@ class DatabaseSeeder extends Seeder
                 'password' => $hash, 'phone' => sprintf('0792%06d', $i + 1),
                 'status' => 'pending', 'city' => $cityName,
                 'city_id' => $cityId, 'town_id' => $townId,
-                'health_certificate' => 'certificates/sample.pdf', 'locale' => 'en',
+                'health_certificate' => 'certificates/sample.pdf',
+                'commercial_registration_certificate' => 'certificates/sample.pdf',
+                'locale' => 'en',
             ]);
             $user->addRole('donor');
         }

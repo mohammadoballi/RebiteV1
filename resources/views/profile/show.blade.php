@@ -164,6 +164,9 @@
                             <label for="password_confirmation" class="form-label">{{ __('Confirm New Password') }}</label>
                             <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
                         </div>
+                        <div class="col-12">
+                            <small class="text-muted">{{ __('auth_page.password_strength_hint') }}</small>
+                        </div>
                         <div class="col-12 text-end">
                             <button type="submit" class="btn btn-success" id="btn-change-password">
                                 <i class="fas fa-key me-1"></i> {{ __('Change Password') }}

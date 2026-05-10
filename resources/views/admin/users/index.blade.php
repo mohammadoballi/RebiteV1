@@ -113,6 +113,14 @@
                             </a>
                         </div>
                     </div>
+                    <div class="col-12" id="commercial-registration-row" style="display:none">
+                        <div class="p-2 rounded bg-light">
+                            <small class="text-muted d-block">{{ __('users.commercial_registration_certificate') }}</small>
+                            <a href="#" id="user-commercial-registration" target="_blank" class="btn btn-sm btn-outline-success mt-1">
+                                <i class="fas fa-file-contract me-1"></i> {{ __('general.view') }}
+                            </a>
+                        </div>
+                    </div>
                     <div class="col-12" id="id-file-row" style="display:none">
                         <div class="p-2 rounded bg-light">
                             <small class="text-muted d-block">{{ __('ID File') }}</small>

@@ -39,4 +39,5 @@ return [
     'view' => 'عرض',
     'close' => 'إغلاق',
     'welcome' => 'مرحباً',
+    'subscription_required_for_profile' => 'يرجى الاشتراك في الجمعية قبل عرض ملفك الشخصي أو إدارته.',
 ];

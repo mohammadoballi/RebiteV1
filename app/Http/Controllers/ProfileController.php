@@ -14,8 +14,12 @@ class ProfileController extends Controller
         protected UserService $userService
     ) {}
 
-    public function show()
+    public function show(Request $request)
     {
+        if ($response = $this->blockedCharityProfileResponse($request)) {
+            return $response;
+        }
+
         $cities = City::orderBy('name')->get();
 
         return view('profile.show', [
@@ -26,6 +30,10 @@ class ProfileController extends Controller
 
     public function update(UpdateProfileRequest $request)
     {
+        if ($response = $this->blockedCharityProfileResponse($request)) {
+            return $response;
+        }
+
         $data = $request->validated();
         unset($data['avatar']);
 
@@ -44,6 +52,10 @@ class ProfileController extends Controller
 
     public function changePassword(ChangePasswordRequest $request)
     {
+        if ($response = $this->blockedCharityProfileResponse($request)) {
+            return $response;
+        }
+
         $this->userService->changePassword(auth()->id(), $request->validated('password'));
 
         if ($request->expectsJson()) {
@@ -55,6 +67,10 @@ class ProfileController extends Controller
 
     public function uploadAvatar(Request $request)
     {
+        if ($response = $this->blockedCharityProfileResponse($request)) {
+            return $response;
+        }
+
         $request->validate([
             'avatar' => ['required', 'image', 'max:2048'],
         ]);
@@ -65,5 +81,24 @@ class ProfileController extends Controller
             'message' => __('Avatar uploaded successfully.'),
             'path'    => asset('storage/' . $path),
         ]);
+    }
+
+    /**
+     * Charities must have an active subscription before using profile routes.
+     */
+    protected function blockedCharityProfileResponse(Request $request): ?\Symfony\Component\HttpFoundation\Response
+    {
+        $user = auth()->user();
+        if (!$user || !$user->hasRole('charity') || $user->hasActiveSubscription()) {
+            return null;
+        }
+
+        $message = __('general.subscription_required_for_profile');
+
+        if ($request->expectsJson()) {
+            return response()->json(['message' => $message], 403);
+        }
+
+        return redirect()->route('charity.subscription.index')->with('error', $message);
     }
 }

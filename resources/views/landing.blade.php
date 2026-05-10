@@ -521,7 +521,7 @@
                 <div class="contact-card">
                     <i class="fas fa-phone"></i>
                     <h6>{{ __('Phone') }}</h6>
-                    <p class="text-muted mb-0">+962 7XX XXX XXX</p>
+                    <p class="text-muted mb-0">+962 79 284 3165</p>
                 </div>
             </div>
         </div>
@@ -540,6 +540,7 @@
                 <ul class="list-unstyled small">
                     <li class="mb-2"><i class="fas fa-map-marker-alt me-2"></i>{{ __('landing.location') }}</li>
                     <li class="mb-2"><i class="fas fa-envelope me-2"></i>info@rebite.com</li>
+                    <li class="mb-2"><i class="fas fa-phone me-2"></i>+962 79 284 3165</li>
                 </ul>
             </div>
             <div class="col-lg-4">
@@ -562,6 +563,7 @@
                 <ul class="list-unstyled small">
                     <li class="mb-2"><i class="fas fa-map-marker-alt me-2"></i>{{ __('landing.location') }}</li>
                     <li class="mb-2"><i class="fas fa-envelope me-2"></i>info@rebite.com</li>
+                    <li class="mb-2"><i class="fas fa-phone me-2"></i>+962 79 284 3165</li>
                 </ul>
             </div>
         </div>
