@@ -5,6 +5,19 @@
 @section('content')
 <div class="page-header d-flex flex-wrap align-items-center justify-content-between gap-2">
     <h1><i class="fas fa-hand-holding-heart me-2"></i>{{ __('Manage Donations') }}</h1>
+    <div class="d-flex align-items-center gap-2">
+        <label for="donationStatusFilter" class="form-label mb-0 small text-muted">{{ __('donations.status') }}:</label>
+        <select id="donationStatusFilter" class="form-select form-select-sm" style="width:auto">
+            <option value="">{{ __('All') }}</option>
+            <option value="pending">{{ __('donations.pending') }}</option>
+            <option value="accepted">{{ __('donations.accepted') }}</option>
+            <option value="assigned">{{ __('donations.assigned') }}</option>
+            <option value="in_transit">{{ __('donations.in_transit') }}</option>
+            <option value="delivered">{{ __('donations.delivered') }}</option>
+            <option value="completed">{{ __('donations.completed') }}</option>
+            <option value="cancelled">{{ __('donations.cancelled') }}</option>
+        </select>
+    </div>
 </div>
 
 <div class="card">
@@ -59,6 +72,14 @@
                     <div class="col-md-6">
                         <label class="form-label text-muted small mb-0">{{ __('donations.status') }}</label>
                         <p class="mb-2"><span class="badge" id="donation-status-badge">-</span></p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small mb-0">{{ __('City') }} / {{ __('Town') }}</label>
+                        <p class="fw-semibold mb-2" id="donation-city-town">-</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label text-muted small mb-0">{{ __('Food category') }}</label>
+                        <p class="fw-semibold mb-2" id="donation-food-category">-</p>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label text-muted small mb-0">{{ __('donations.pickup_address') }}</label>

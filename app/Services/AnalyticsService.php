@@ -7,6 +7,7 @@ use App\Models\DonationAssignment;
 use App\Models\DonationItem;
 use App\Models\DonationRequest;
 use App\Models\Rating;
+use App\Models\SubscriptionPayment;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
@@ -185,11 +186,48 @@ class AnalyticsService
             ->toArray();
     }
 
-    public function getDashboardData(): array
+    public function getSubscriptionRevenueSummary(int $year, int $month): array
+    {
+        $monthCents = (int) SubscriptionPayment::query()
+            ->whereYear('paid_at', $year)
+            ->whereMonth('paid_at', $month)
+            ->sum('amount_cents');
+
+        $totalCents = (int) SubscriptionPayment::query()->sum('amount_cents');
+
+        return [
+            'month_cents' => $monthCents,
+            'total_cents' => $totalCents,
+            'month_formatted' => '$'.number_format($monthCents / 100, 2),
+            'total_formatted' => '$'.number_format($totalCents / 100, 2),
+        ];
+    }
+
+    /**
+     * @return array<string,int> month_key => amount_cents
+     */
+    public function getMonthlySubscriptionRevenue(int $months = 12): array
+    {
+        $out = [];
+        $cursor = now()->startOfMonth()->subMonths($months - 1);
+        for ($i = 0; $i < $months; $i++) {
+            $key = $cursor->format('Y-m');
+            $out[$key] = (int) SubscriptionPayment::query()
+                ->whereYear('paid_at', $cursor->year)
+                ->whereMonth('paid_at', $cursor->month)
+                ->sum('amount_cents');
+            $cursor->addMonth();
+        }
+
+        return $out;
+    }
+
+    public function getDashboardData(int $year, int $month): array
     {
         $userStats = $this->getUserStats();
         $donationStats = $this->getDonationStats();
         $foodSaved = $this->getFoodSavedStats();
+        $rev = $this->getSubscriptionRevenueSummary($year, $month);
 
         return [
             'total_users' => $userStats['total'],
@@ -197,11 +235,18 @@ class AnalyticsService
             'pending_approvals' => $userStats['pending'],
             'food_saved' => $foodSaved['formatted'],
             'monthly_donations' => $this->getMonthlyDonations(),
+            'monthly_subscription_cents' => $this->getMonthlySubscriptionRevenue(),
             'users_by_role' => $this->getUsersByRole(),
-            'recent_donations' => Donation::with('donor:id,name')
-                ->latest()
-                ->limit(5)
-                ->get(),
+            'donations_by_status' => $this->getDonationsByStatus(),
+            'subscription_month_cents' => $rev['month_cents'],
+            'subscription_total_cents' => $rev['total_cents'],
+            'subscription_month_formatted' => $rev['month_formatted'],
+            'subscription_total_formatted' => $rev['total_formatted'],
+            'revenue_filter_year' => $year,
+            'revenue_filter_month' => $month,
+            'pending_donations' => Donation::where('status', 'pending')->count(),
+            'accepted_donations' => Donation::where('status', 'accepted')->count(),
+            'open_assignments' => DonationAssignment::whereIn('status', ['pending', 'accepted', 'in_progress'])->count(),
         ];
     }
 

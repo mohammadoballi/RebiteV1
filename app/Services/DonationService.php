@@ -115,24 +115,26 @@ class DonationService
 
     public function getMarketplaceData(array $filters = [], bool $forVolunteerBrowse = false)
     {
-        $query = Donation::available()
-            ->with(['donor:id,name,city,city_id,town_id,avatar', 'items', 'cityRelation:id,name', 'town:id,name'])
-            ->latest();
+        $with = ['donor:id,name,city,city_id,town_id,avatar', 'items', 'cityRelation:id,name', 'town:id,name', 'foodCategory.parent:id,name'];
 
         if ($forVolunteerBrowse) {
-            $query->forVolunteerMarketplace()
+            $query = Donation::query()
+                ->with($with)
+                ->whereIn('status', [Donation::STATUS_PENDING, Donation::STATUS_ACCEPTED])
+                ->where(function ($q) {
+                    $q->whereNull('expiry_time')
+                        ->orWhere('expiry_time', '>', now());
+                })
+                ->whereColumn('volunteers_count', '<', 'volunteers_needed')
+                ->forVolunteerMarketplace()
                 ->withExists('approvedCharityRequest')
-                ->withExists('charityLinkedAssignments');
-        }
-
-        if (!empty($filters['search'])) {
-            $search = $filters['search'];
-            $query->where(function ($q) use ($search) {
-                $q->where('food_type', 'like', "%{$search}%")
-                  ->orWhere('pickup_address', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhereHas('items', fn ($q2) => $q2->where('food_type', 'like', "%{$search}%"));
-            });
+                ->withExists('charityLinkedAssignments')
+                ->latest();
+        } else {
+            $query = Donation::query()
+                ->with($with)
+                ->available()
+                ->latest();
         }
 
         if (!empty($filters['city_id'])) {
@@ -143,11 +145,20 @@ class DonationService
             $query->where('town_id', $filters['town_id']);
         }
 
+        if (!empty($filters['food_category_id'])) {
+            $query->where('food_category_id', $filters['food_category_id']);
+        }
+
+        if (!empty($filters['food_category_parent_id'])) {
+            $parentId = $filters['food_category_parent_id'];
+            $query->whereHas('foodCategory', fn ($q) => $q->where('parent_id', $parentId));
+        }
+
         if (!empty($filters['food_type'])) {
             $ft = $filters['food_type'];
             $query->where(function ($q) use ($ft) {
                 $q->where('food_type', 'like', "%{$ft}%")
-                  ->orWhereHas('items', fn ($q2) => $q2->where('food_type', 'like', "%{$ft}%"));
+                    ->orWhereHas('items', fn ($q2) => $q2->where('food_type', 'like', "%{$ft}%"));
             });
         }
 

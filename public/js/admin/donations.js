@@ -2,7 +2,14 @@
  * Admin - Donations Management
  */
 $(document).ready(function() {
-    let donationsTable = initDataTable('donations-table', window.routes.donationsDatatable, [
+    const params = new URLSearchParams(window.location.search);
+    const initialStatus = params.get('status') || '';
+    if (initialStatus) {
+        $('#donationStatusFilter').val(initialStatus);
+    }
+
+    let donationsUrl = window.routes.donationsDatatable + (initialStatus ? '?status=' + encodeURIComponent(initialStatus) : '');
+    let donationsTable = initDataTable('donations-table', donationsUrl, [
         { data: 'id', name: 'id' },
         { data: 'donor_name', name: 'donor.name' },
         { data: 'food_type', name: 'food_type' },
@@ -13,24 +20,41 @@ $(document).ready(function() {
         { data: 'actions', name: 'actions', orderable: false, searchable: false }
     ]);
 
+    $('#donationStatusFilter').on('change', function() {
+        let val = $(this).val();
+        donationsTable.ajax.url(window.routes.donationsDatatable + (val ? '?status=' + encodeURIComponent(val) : '')).load();
+    });
+
     // View donation details
     $(document).on('click', '.btn-view-donation', function() {
         let donationId = $(this).data('id');
         $.get(window.routes.donationsShow.replace(':id', donationId), function(data) {
             let modal = $('#viewDonationModal');
             modal.find('#donation-food-type').text(data.food_type);
-            modal.find('#donation-quantity').text(data.quantity + ' ' + data.quantity_unit);
-            modal.find('#donation-status').html(getStatusBadge(data.status));
-            modal.find('#donation-address').text(data.pickup_address);
-            modal.find('#donation-pickup-time').text(data.pickup_time);
+            modal.find('#donation-quantity').text(data.quantity + ' ' + (data.quantity_unit || ''));
+            modal.find('#donation-status-badge').html(getStatusBadge(data.status));
+            var loc = '';
+            if (data.city_relation) loc = data.city_relation.name;
+            if (data.town) loc += (loc ? ' / ' : '') + data.town.name;
+            modal.find('#donation-city-town').text(loc || '-');
+            var fc = '';
+            if (data.food_category) {
+                fc = (data.food_category.parent ? data.food_category.parent.name + ' — ' : '') + data.food_category.name;
+            }
+            modal.find('#donation-food-category').text(fc || '-');
+            modal.find('#donation-pickup-address').text(data.pickup_address || '-');
+            modal.find('#donation-pickup-time').text(data.pickup_time || '-');
+            modal.find('#donation-expiry-time').text(data.expiry_time || '-');
+            modal.find('#donation-created-at').text(data.created_at || '-');
             modal.find('#donation-description').text(data.description || '-');
             modal.find('#donation-notes').text(data.notes || '-');
             modal.find('#donation-donor').text(data.donor ? data.donor.name : '-');
 
             if (data.image) {
-                modal.find('#donation-image').html('<img src="/' + data.image + '" class="img-fluid rounded" style="max-height:200px">');
+                modal.find('#donation-image-row').show();
+                modal.find('#donation-image').attr('src', '/storage/' + data.image);
             } else {
-                modal.find('#donation-image').html('-');
+                modal.find('#donation-image-row').hide();
             }
 
             // Status update dropdown

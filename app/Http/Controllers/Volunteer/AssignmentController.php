@@ -23,10 +23,20 @@ class AssignmentController extends Controller
     public function datatable(): JsonResponse
     {
         $query = DonationAssignment::where('volunteer_id', auth()->id())
-            ->with('donation');
+            ->with(['donation.cityRelation:id,name', 'donation.town:id,name']);
 
         return DataTables::eloquent($query)
             ->addColumn('donation_food_type', fn ($a) => $a->donation->food_type ?? '-')
+            ->addColumn('pickup_city', function ($a) {
+                $d = $a->donation;
+                if (!$d) {
+                    return '-';
+                }
+                $parts = array_filter([$d->cityRelation?->name, $d->town?->name]);
+
+                return $parts ? implode(' / ', $parts) : '-';
+            })
+            ->addColumn('pickup_address_short', fn ($a) => $a->donation ? \Illuminate\Support\Str::limit((string) $a->donation->pickup_address, 48) : '-')
             ->addColumn('actions', function (DonationAssignment $a) {
                 return '<button class="btn btn-sm btn-outline-success btn-view-assignment" data-id="'.$a->id.'" title="View"><i class="fas fa-eye"></i></button>';
             })
@@ -37,7 +47,7 @@ class AssignmentController extends Controller
     public function show(int $id): JsonResponse
     {
         $assignment = DonationAssignment::where('volunteer_id', auth()->id())
-            ->with(['donation.donor', 'donationRequest.charity'])
+            ->with(['donation.donor', 'donation.cityRelation:id,name', 'donation.town:id,name', 'donation.foodCategory.parent:id,name', 'donationRequest.charity'])
             ->findOrFail($id);
 
         return response()->json($assignment);

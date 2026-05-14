@@ -7,6 +7,7 @@ use App\Models\City;
 use App\Models\Donation;
 use App\Models\DonationAssignment;
 use App\Models\DonationRequest;
+use App\Models\FoodCategory;
 use App\Models\Setting;
 use App\Models\Town;
 use App\Services\DonationService;
@@ -24,9 +25,9 @@ class DonationController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        $filters = $request->only(['search', 'city_id', 'town_id', 'food_type', 'date_from', 'date_to']);
+        $filters = $request->only(['city_id', 'town_id', 'food_type', 'food_category_id', 'food_category_parent_id', 'date_from', 'date_to']);
 
-        if (!$request->has('city_id') && !$request->has('search') && !$request->has('food_type')) {
+        if (!$request->has('city_id') && !$request->has('food_type') && !$request->has('food_category_id') && !$request->has('food_category_parent_id')) {
             if ($user->city_id) {
                 $filters['city_id'] = $user->city_id;
             }
@@ -46,12 +47,14 @@ class DonationController extends Controller
             $towns = Town::where('city_id', $selectedCityId)->orderBy('name')->get();
         }
 
+        $foodCategoryParents = FoodCategory::roots()->with('children')->get();
+
         $assignedDonationIds = DonationAssignment::where('volunteer_id', auth()->id())
             ->whereIn('status', ['pending', 'accepted', 'in_progress'])
             ->pluck('donation_id')
             ->toArray();
 
-        return view('volunteer.donations.index', compact('donations', 'filters', 'cities', 'towns', 'assignedDonationIds'));
+        return view('volunteer.donations.index', compact('donations', 'filters', 'cities', 'towns', 'assignedDonationIds', 'foodCategoryParents'));
     }
 
     public function show(int $id): JsonResponse
@@ -61,6 +64,7 @@ class DonationController extends Controller
             'items',
             'cityRelation:id,name',
             'town:id,name',
+            'foodCategory.parent:id,name',
         ])
             ->withExists('approvedCharityRequest')
             ->withExists('charityLinkedAssignments')
@@ -99,11 +103,11 @@ class DonationController extends Controller
             ->first();
 
         $assignment = DonationAssignment::create([
-            'donation_id'          => $donation->id,
-            'donation_request_id'   => $approvedRequest?->id,
-            'volunteer_id'         => auth()->id(),
-            'assignment_type'      => $type,
-            'status'               => 'accepted',
+            'donation_id' => $donation->id,
+            'donation_request_id' => $approvedRequest?->id,
+            'volunteer_id' => auth()->id(),
+            'assignment_type' => $type,
+            'status' => 'accepted',
         ]);
 
         $donation->increment('volunteers_count');

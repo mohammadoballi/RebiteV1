@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Donation;
 
+use App\Models\FoodCategory;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateDonationRequest extends FormRequest
@@ -14,9 +15,10 @@ class UpdateDonationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'city_id'           => ['nullable', 'exists:cities,id'],
-            'town_id'           => ['nullable', 'exists:towns,id'],
-            'pickup_address'    => ['nullable', 'string'],
+            'city_id' => ['nullable', 'exists:cities,id'],
+            'town_id' => ['nullable', 'exists:towns,id'],
+            'pickup_address' => ['nullable', 'string'],
+            'food_category_id' => ['nullable', 'exists:food_categories,id'],
             'latitude'          => ['nullable', 'numeric'],
             'longitude'         => ['nullable', 'numeric'],
             'pickup_time'       => ['nullable', 'date', 'after:now'],
@@ -30,5 +32,19 @@ class UpdateDonationRequest extends FormRequest
             'items.*.quantity_unit' => ['required_with:items', 'string', 'in:kg,pieces,boxes,bags,plates'],
             'items.*.description'   => ['nullable', 'string', 'max:500'],
         ];
+    }
+
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator) {
+            $id = $this->input('food_category_id');
+            if ($id === null || $id === '') {
+                return;
+            }
+            $leaf = FoodCategory::query()->where('id', $id)->whereNotNull('parent_id')->exists();
+            if (!$leaf) {
+                $validator->errors()->add('food_category_id', __('Select a specific food subcategory.'));
+            }
+        });
     }
 }

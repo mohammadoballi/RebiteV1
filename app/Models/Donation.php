@@ -22,6 +22,7 @@ class Donation extends Model
         'user_id',
         'city_id',
         'town_id',
+        'food_category_id',
         'food_type',
         'description',
         'quantity',
@@ -66,6 +67,11 @@ class Donation extends Model
     public function town()
     {
         return $this->belongsTo(Town::class, 'town_id');
+    }
+
+    public function foodCategory()
+    {
+        return $this->belongsTo(FoodCategory::class, 'food_category_id');
     }
 
     public function items()
@@ -127,14 +133,17 @@ class Donation extends Model
         return $query->where('status', self::STATUS_PENDING);
     }
 
+    /**
+     * Donations listed for charities: open (pending) until a charity claims them.
+     */
     public function scopeAvailable($query)
     {
-        return $query->where('status', self::STATUS_ACCEPTED)
-                     ->where(function ($q) {
-                         $q->whereNull('expiry_time')
-                           ->orWhere('expiry_time', '>', now());
-                     })
-                     ->whereColumn('volunteers_count', '<', 'volunteers_needed');
+        return $query->where('status', self::STATUS_PENDING)
+            ->where(function ($q) {
+                $q->whereNull('expiry_time')
+                    ->orWhere('expiry_time', '>', now());
+            })
+            ->whereColumn('volunteers_count', '<', 'volunteers_needed');
     }
 
     /**

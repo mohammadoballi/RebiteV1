@@ -2,9 +2,12 @@
 
 namespace App\Services;
 
+use App\Models\Donation;
 use App\Models\DonationRequest;
 use App\Repositories\DonationRequestRepository;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
+use RuntimeException;
 
 class DonationRequestService
 {
@@ -17,23 +20,62 @@ class DonationRequestService
         return $this->donationRequestRepository->create($data);
     }
 
-    public function approve(int $id): bool
+    /**
+     * Charity claims a donation: serializes on the donation row, rejects competing charities,
+     * marks this request approved, and moves the donation out of the marketplace (pending → accepted).
+     */
+    public function charityAcceptDonation(int $donationId, int $charityId, ?string $message = null): DonationRequest
     {
-        $request = $this->donationRequestRepository->findOrFail($id);
+        return DB::transaction(function () use ($donationId, $charityId, $message) {
+            /** @var Donation $donation */
+            $donation = Donation::query()->lockForUpdate()->findOrFail($donationId);
 
-        $this->donationRequestRepository
-            ->query()
-            ->where('donation_id', $request->donation_id)
-            ->where('id', '!=', $id)
-            ->where('status', 'pending')
-            ->update(['status' => 'rejected']);
+            if ($donation->status !== Donation::STATUS_PENDING) {
+                throw new RuntimeException(__('This donation is no longer available.'));
+            }
 
-        return $this->donationRequestRepository->approve($id);
-    }
+            if (DonationRequest::query()
+                ->where('donation_id', $donationId)
+                ->where('status', DonationRequest::STATUS_APPROVED)
+                ->exists()) {
+                throw new RuntimeException(__('This donation has already been accepted by another charity.'));
+            }
 
-    public function reject(int $id): bool
-    {
-        return $this->donationRequestRepository->reject($id);
+            $existing = DonationRequest::query()
+                ->where('donation_id', $donationId)
+                ->where('charity_id', $charityId)
+                ->whereIn('status', [DonationRequest::STATUS_PENDING, DonationRequest::STATUS_APPROVED])
+                ->first();
+
+            if ($existing && $existing->status === DonationRequest::STATUS_APPROVED) {
+                throw new RuntimeException(__('You have already accepted this donation.'));
+            }
+
+            DonationRequest::query()
+                ->where('donation_id', $donationId)
+                ->where('status', DonationRequest::STATUS_PENDING)
+                ->where('charity_id', '!=', $charityId)
+                ->update(['status' => DonationRequest::STATUS_REJECTED]);
+
+            if ($existing) {
+                $existing->update([
+                    'status' => DonationRequest::STATUS_APPROVED,
+                    'message' => $message ?? $existing->message,
+                ]);
+                $req = $existing->fresh();
+            } else {
+                $req = DonationRequest::create([
+                    'donation_id' => $donationId,
+                    'charity_id' => $charityId,
+                    'status' => DonationRequest::STATUS_APPROVED,
+                    'message' => $message,
+                ]);
+            }
+
+            $donation->update(['status' => Donation::STATUS_ACCEPTED]);
+
+            return $req;
+        });
     }
 
     public function getByCharity(int $charityId): Collection

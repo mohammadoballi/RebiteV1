@@ -14,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(\App\Repositories\DonationRepository::class);
         $this->app->singleton(\App\Repositories\DonationRequestRepository::class);
         $this->app->singleton(\App\Repositories\DonationAssignmentRepository::class);
-        $this->app->singleton(\App\Repositories\RatingRepository::class);
+        $this->app->singleton(\App\Services\SubscriptionPaymentService::class);
     }
 
     public function boot(): void

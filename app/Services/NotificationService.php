@@ -31,8 +31,8 @@ class NotificationService
         if (!$donation->donor) return;
 
         $statusLabels = [
-            'pending'    => 'is pending review',
-            'accepted'   => 'has been approved and is now visible',
+            'pending'    => 'is listed and awaiting a charity',
+            'accepted'   => 'has been claimed by a charity',
             'assigned'   => 'has been assigned for delivery',
             'in_transit' => 'is in transit',
             'delivered'  => 'has been delivered',
@@ -70,7 +70,27 @@ class NotificationService
         );
     }
 
-    // ── Charity request approved/rejected by admin ──
+    /** Donor notification when a charity claims the donation (direct accept; no admin step). */
+    public function notifyDonationClaimedByCharity(DonationRequest $request): void
+    {
+        $request->loadMissing(['donation.donor', 'charity']);
+        $donation = $request->donation;
+        if (!$donation?->donor) {
+            return;
+        }
+
+        $charityName = $request->charity->organization_name ?? $request->charity->name ?? 'A charity';
+
+        $this->notifyUser(
+            $donation->donor,
+            'Donation Accepted by Charity',
+            "{$charityName} has accepted your donation #{$donation->id}. It is no longer available to other charities.",
+            'donation_claimed',
+            ['donation_id' => $donation->id, 'request_id' => $request->id]
+        );
+    }
+
+    // ── Charity request approved/rejected by admin (legacy notifications; admin no longer approves) ──
 
     public function notifyCharityRequestApproved(DonationRequest $request): void
     {
@@ -208,7 +228,7 @@ class NotificationService
             $this->notifyUser(
                 $admin,
                 'New Donation',
-                "{$donorName} created donation #{$donation->id}. Pending your approval.",
+                "{$donorName} listed donation #{$donation->id} on the marketplace.",
                 'new_donation',
                 ['donation_id' => $donation->id]
             );

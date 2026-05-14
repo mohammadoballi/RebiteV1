@@ -58,11 +58,29 @@
 
                     <hr>
 
+                    <div class="row g-3 mb-2">
+                        <div class="col-12">
+                            <label for="food_category_id" class="form-label">{{ __('Food category') }} <span class="text-danger">*</span></label>
+                            <select class="form-select" id="food_category_id" name="food_category_id" required>
+                                <option value="">{{ __('Select food type') }}</option>
+                                @foreach($foodCategoryParents ?? [] as $p)
+                                    <optgroup label="{{ $p->name }}">
+                                        @foreach($p->children as $c)
+                                            <option value="{{ $c->id }}">{{ $c->name }}</option>
+                                        @endforeach
+                                    </optgroup>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr>
+
                     {{-- Donation Details --}}
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label for="donation_city_id" class="form-label">{{ __('City') }}</label>
-                            <select class="form-select" id="donation_city_id" name="city_id">
+                            <label for="donation_city_id" class="form-label">{{ __('City') }} <span class="text-danger">*</span></label>
+                            <select class="form-select" id="donation_city_id" name="city_id" required>
                                 <option value="">{{ __('Select City') }}</option>
                                 @foreach($cities as $city)
                                     <option value="{{ $city->id }}">{{ $city->name }}</option>
@@ -71,8 +89,8 @@
                         </div>
 
                         <div class="col-md-6">
-                            <label for="donation_town_id" class="form-label">{{ __('Town') }}</label>
-                            <select class="form-select" id="donation_town_id" name="town_id">
+                            <label for="donation_town_id" class="form-label">{{ __('Town') }} <span class="text-danger">*</span></label>
+                            <select class="form-select" id="donation_town_id" name="town_id" required>
                                 <option value="">{{ __('Select Town') }}</option>
                             </select>
                         </div>
@@ -162,6 +180,14 @@
                             <small class="text-muted d-block">{{ __('donations.pickup_time') }}</small>
                             <span id="view-pickup-time">-</span>
                         </div>
+                    </div>
+                    <div class="col-12">
+                        <small class="text-muted d-block">{{ __('City') }} / {{ __('Town') }}</small>
+                        <span id="view-city-town">-</span>
+                    </div>
+                    <div class="col-12">
+                        <small class="text-muted d-block">{{ __('Food category') }}</small>
+                        <span id="view-food-category">-</span>
                     </div>
                     <div class="col-12">
                         <small class="text-muted d-block">{{ __('donations.pickup_address') }}</small>

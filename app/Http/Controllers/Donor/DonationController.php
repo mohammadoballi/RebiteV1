@@ -7,6 +7,7 @@ use App\Http\Requests\Donation\StoreDonationRequest;
 use App\Http\Requests\Donation\UpdateDonationRequest;
 use App\Models\City;
 use App\Models\Donation;
+use App\Models\FoodCategory;
 use App\Services\DonationService;
 use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
@@ -22,8 +23,9 @@ class DonationController extends Controller
     public function index()
     {
         $cities = City::orderBy('name')->get();
+        $foodCategoryParents = FoodCategory::roots()->with('children')->get();
 
-        return view('donor.donations.index', compact('cities'));
+        return view('donor.donations.index', compact('cities', 'foodCategoryParents'));
     }
 
     public function datatable(): JsonResponse
@@ -72,7 +74,7 @@ class DonationController extends Controller
     public function show(int $id): JsonResponse
     {
         $donation = Donation::where('user_id', auth()->id())
-            ->with(['items', 'requests.charity', 'assignments.volunteer', 'cityRelation:id,name', 'town:id,name'])
+            ->with(['items', 'requests.charity', 'assignments.volunteer', 'cityRelation:id,name', 'town:id,name', 'foodCategory.parent:id,name'])
             ->findOrFail($id);
 
         return response()->json($donation);

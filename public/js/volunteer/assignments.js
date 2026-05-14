@@ -5,6 +5,8 @@ $(document).ready(function() {
     let assignmentsTable = initDataTable('assignments-table', window.routes.assignmentsDatatable, [
         { data: 'id', name: 'id' },
         { data: 'donation_food_type', name: 'donation.food_type' },
+        { data: 'pickup_city', name: 'donation.city_id', orderable: false, searchable: false },
+        { data: 'pickup_address_short', name: 'donation.pickup_address', orderable: false },
         { data: 'assignment_type', name: 'assignment_type' },
         { data: 'status', name: 'status' },
         { data: 'pickup_at', name: 'pickup_at' },
@@ -19,6 +21,10 @@ $(document).ready(function() {
             let modal = $('#viewAssignmentModal');
             modal.find('#assign-food-type').text(data.donation ? data.donation.food_type : '-');
             modal.find('#assign-quantity').text(data.donation ? data.donation.quantity + ' ' + data.donation.quantity_unit : '-');
+            var loc = '';
+            if (data.donation && data.donation.city_relation) loc = data.donation.city_relation.name;
+            if (data.donation && data.donation.town) loc += (loc ? ' / ' : '') + data.donation.town.name;
+            modal.find('#assign-city-town').text(loc || '-');
             modal.find('#assign-address').text(data.donation ? data.donation.pickup_address : '-');
             modal.find('#assign-type').text(data.assignment_type);
             modal.find('#assign-status').html(getStatusBadge(data.status));

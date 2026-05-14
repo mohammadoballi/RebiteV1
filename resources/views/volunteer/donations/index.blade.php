@@ -17,10 +17,6 @@
         <form method="GET" action="{{ route('volunteer.donations.index') }}" id="filterForm">
             <div class="row g-3 align-items-end">
                 <div class="col-md-2">
-                    <label class="form-label fw-semibold"><i class="fas fa-search me-1"></i> {{ __('general.search') }}</label>
-                    <input type="text" name="search" class="form-control" placeholder="{{ __('Search food, address...') }}" value="{{ $filters['search'] ?? '' }}">
-                </div>
-                <div class="col-md-2">
                     <label class="form-label fw-semibold"><i class="fas fa-city me-1"></i> {{ __('City') }}</label>
                     <select name="city_id" id="filter_city_id" class="form-select">
                         <option value="">{{ __('All Cities') }}</option>
@@ -40,21 +36,30 @@
                         @endif
                     </select>
                 </div>
-                <div class="col-md-2">
-                    <label class="form-label fw-semibold"><i class="fas fa-utensils me-1"></i> {{ __('donations.food_type') }}</label>
-                    <input type="text" name="food_type" class="form-control" placeholder="{{ __('e.g. Rice') }}" value="{{ $filters['food_type'] ?? '' }}">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold"><i class="fas fa-sitemap me-1"></i> {{ __('Food category') }}</label>
+                    <select name="food_category_id" class="form-select">
+                        <option value="">{{ __('All food types') }}</option>
+                        @foreach($foodCategoryParents ?? [] as $p)
+                            <optgroup label="{{ $p->name }}">
+                                @foreach($p->children as $c)
+                                    <option value="{{ $c->id }}" {{ ($filters['food_category_id'] ?? '') == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
+                                @endforeach
+                            </optgroup>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="col-md-2">
                     <label class="form-label fw-semibold"><i class="fas fa-calendar me-1"></i> {{ __('From') }}</label>
                     <input type="date" name="date_from" class="form-control" value="{{ $filters['date_from'] ?? '' }}">
                 </div>
-                <div class="col-md-1">
+                <div class="col-md-2">
                     <label class="form-label fw-semibold">{{ __('To') }}</label>
                     <input type="date" name="date_to" class="form-control" value="{{ $filters['date_to'] ?? '' }}">
                 </div>
                 <div class="col-md-1 d-flex gap-1">
-                    <button type="submit" class="btn btn-success flex-grow-1" title="{{ __('general.search') }}"><i class="fas fa-filter"></i></button>
-                    <a href="{{ route('volunteer.donations.index') }}?city_id=&town_id=" class="btn btn-outline-secondary" title="{{ __('Reset') }}"><i class="fas fa-times"></i></a>
+                    <button type="submit" class="btn btn-success flex-grow-1" title="{{ __('Filter') }}"><i class="fas fa-filter"></i></button>
+                    <a href="{{ route('volunteer.donations.index') }}" class="btn btn-outline-secondary" title="{{ __('Reset') }}"><i class="fas fa-times"></i></a>
                 </div>
             </div>
         </form>

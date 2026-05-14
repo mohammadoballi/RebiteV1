@@ -128,6 +128,7 @@ $(document).ready(function() {
             $('#donationForm [name="pickup_time"]').val(data.pickup_time ? data.pickup_time.substring(0, 16) : '');
             $('#donationForm [name="expiry_time"]').val(data.expiry_time ? data.expiry_time.substring(0, 16) : '');
             $('#donationForm [name="notes"]').val(data.notes);
+            $('#food_category_id').val(data.food_category_id || '');
 
             // Populate city and town
             if (data.city_id) {
@@ -220,6 +221,15 @@ $(document).ready(function() {
             modal.find('#view-delivery-volunteers').html((data.delivery_volunteers_needed || 0) + ' <i class="fas fa-truck text-success"></i>');
             modal.find('#view-packaging-volunteers').html((data.packaging_volunteers_needed || 0) + ' <i class="fas fa-box text-info"></i>');
             modal.find('#view-pickup-time').text(data.pickup_time ? new Date(data.pickup_time).toLocaleString() : '-');
+            var loc = '';
+            if (data.city_relation) loc = data.city_relation.name;
+            if (data.town) loc += (loc ? ' / ' : '') + data.town.name;
+            modal.find('#view-city-town').text(loc || '-');
+            var fc = '';
+            if (data.food_category) {
+                fc = (data.food_category.parent ? data.food_category.parent.name + ' — ' : '') + data.food_category.name;
+            }
+            modal.find('#view-food-category').text(fc || '-');
             modal.find('#view-address').text(data.pickup_address || '-');
 
             if (data.description) { modal.find('#view-description').text(data.description); modal.find('#view-desc-wrap').show(); }

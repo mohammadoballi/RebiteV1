@@ -12,6 +12,8 @@
         <x-datatable id="assignments-table" :columns="[
             'ID',
             'Food Type',
+            __('City') . ' / ' . __('Town'),
+            __('donations.pickup_address'),
             'Type',
             'Status',
             'Pickup Time',
@@ -34,6 +36,10 @@
         <div class="col-md-6">
             <label class="form-label fw-semibold text-muted">{{ __('Quantity') }}</label>
             <p class="mb-0" id="assign-quantity">-</p>
+        </div>
+        <div class="col-md-12">
+            <label class="form-label fw-semibold text-muted">{{ __('City') }} / {{ __('Town') }}</label>
+            <p class="mb-0" id="assign-city-town">-</p>
         </div>
         <div class="col-md-12">
             <label class="form-label fw-semibold text-muted">{{ __('Pickup Address') }}</label>

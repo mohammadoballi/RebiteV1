@@ -238,13 +238,13 @@
            href="{{ route('admin.donations.index') }}">
             <i class="fas fa-hand-holding-heart"></i> {{ __('donations.title') }}
         </a>
-        <a class="nav-link {{ request()->routeIs('admin.donation-requests.*') ? 'active' : '' }}"
-           href="{{ route('admin.donation-requests.index') }}">
-            <i class="fas fa-clipboard-check"></i> {{ __('Donation Requests') }}
+        <a class="nav-link {{ request()->routeIs('admin.charity-management.*') ? 'active' : '' }}"
+           href="{{ route('admin.charity-management.index') }}">
+            <i class="fas fa-hands-helping"></i> {{ __('Charity Management') }}
         </a>
-        <a class="nav-link {{ request()->routeIs('admin.reports*') ? 'active' : '' }}"
-           href="{{ route('admin.reports') }}">
-            <i class="fas fa-chart-bar"></i> {{ __('Reports') }}
+        <a class="nav-link {{ request()->routeIs('admin.food-categories.*') ? 'active' : '' }}"
+           href="{{ route('admin.food-categories.index') }}">
+            <i class="fas fa-sitemap"></i> {{ __('Food Categories') }}
         </a>
         <a class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}"
            href="{{ route('admin.settings.index') }}">

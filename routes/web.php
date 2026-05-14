@@ -10,8 +10,10 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\DonationController as AdminDonationController;
-use App\Http\Controllers\Admin\ReportController as AdminReportController;
 use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
+use App\Http\Controllers\Admin\CharityManagementController;
+use App\Http\Controllers\Admin\FoodCategoryController as AdminFoodCategoryController;
+use App\Http\Controllers\FoodCategoryController;
 use App\Http\Controllers\Donor\DashboardController as DonorDashboardController;
 use App\Http\Controllers\Donor\DonationController as DonorDonationController;
 use App\Http\Controllers\Charity\DashboardController as CharityDashboardController;
@@ -85,6 +87,8 @@ Route::middleware(['auth', 'approved'])->group(function () {
         Route::get('unread-count', [NotificationController::class, 'unreadCount'])->name('unread-count');
     });
 
+    Route::get('api/food-categories/tree', [FoodCategoryController::class, 'tree'])->name('api.food-categories.tree');
+
     // Admin Routes
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
@@ -107,18 +111,16 @@ Route::middleware(['auth', 'approved'])->group(function () {
             Route::delete('{id}', [AdminDonationController::class, 'destroy'])->name('destroy');
         });
 
-        Route::get('reports', [AdminReportController::class, 'index'])->name('reports');
+        Route::prefix('charity-management')->name('charity-management.')->group(function () {
+            Route::get('/', [CharityManagementController::class, 'index'])->name('index');
+            Route::get('datatable', [CharityManagementController::class, 'datatable'])->name('datatable');
+        });
+
+        Route::resource('food-categories', AdminFoodCategoryController::class)->only(['index', 'store', 'update', 'destroy']);
 
         Route::prefix('settings')->name('settings.')->group(function () {
             Route::get('/', [AdminSettingsController::class, 'index'])->name('index');
             Route::post('/', [AdminSettingsController::class, 'update'])->name('update');
-        });
-
-        Route::prefix('donation-requests')->name('donation-requests.')->group(function () {
-            Route::get('/', [\App\Http\Controllers\Admin\DonationRequestController::class, 'index'])->name('index');
-            Route::get('datatable', [\App\Http\Controllers\Admin\DonationRequestController::class, 'datatable'])->name('datatable');
-            Route::post('{id}/approve', [\App\Http\Controllers\Admin\DonationRequestController::class, 'approve'])->name('approve');
-            Route::post('{id}/reject', [\App\Http\Controllers\Admin\DonationRequestController::class, 'reject'])->name('reject');
         });
     });
 
@@ -157,7 +159,7 @@ Route::middleware(['auth', 'approved'])->group(function () {
 
         // Actions (subscription required)
         Route::middleware('subscribed')->group(function () {
-            Route::post('donations/{id}/request', [CharityDonationController::class, 'request'])->name('donations.request');
+            Route::post('donations/{id}/accept', [CharityDonationController::class, 'accept'])->name('donations.accept');
         });
     });
 

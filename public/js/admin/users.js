@@ -2,7 +2,14 @@
  * Admin - Users Management
  */
 $(document).ready(function() {
-    let usersTable = initDataTable('users-table', window.routes.usersDatatable, [
+    // Status filter from dashboard drill-down URL
+    const uparams = new URLSearchParams(window.location.search);
+    const initialUserStatus = uparams.get('status');
+    if (initialUserStatus) {
+        $('#statusFilter').val(initialUserStatus);
+    }
+
+    let usersTable = initDataTable('users-table', window.routes.usersDatatable + (initialUserStatus ? '?status=' + encodeURIComponent(initialUserStatus) : ''), [
         { data: 'id', name: 'id' },
         { data: 'name', name: 'name' },
         { data: 'email', name: 'email' },

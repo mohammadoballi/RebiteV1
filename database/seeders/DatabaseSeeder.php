@@ -12,6 +12,7 @@ use App\Models\Donation;
 use App\Models\DonationItem;
 use App\Models\DonationRequest;
 use App\Models\DonationAssignment;
+use App\Models\FoodCategory;
 use App\Models\Rating;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
@@ -35,16 +36,17 @@ class DatabaseSeeder extends Seeder
         $permissions = [
             'users-create', 'users-read', 'users-update', 'users-delete', 'users-approve',
             'donations-create', 'donations-read', 'donations-update', 'donations-delete',
-            'donations-request', 'donations-assign',
+            'donations-accept',
             'assignments-read', 'assignments-update',
-            'reports-read',
+            'charity-management-read',
+            'food-categories-manage',
         ];
         foreach ($permissions as $perm) {
             Permission::create(['name' => $perm, 'display_name' => ucwords(str_replace('-', ' ', $perm))]);
         }
         $admin->givePermissions(Permission::all());
         $donor->givePermissions(['donations-create', 'donations-read', 'donations-update', 'donations-delete']);
-        $charity->givePermissions(['donations-read', 'donations-request']);
+        $charity->givePermissions(['donations-read', 'donations-accept']);
         $volunteer->givePermissions(['assignments-read', 'assignments-update']);
 
         $this->call(SettingsSeeder::class);
@@ -59,7 +61,9 @@ class DatabaseSeeder extends Seeder
 
         // ── Seed Cities & Towns (Jordan) ──
         $this->call(CityTownSeeder::class);
+        $this->call(FoodCategorySeeder::class);
         $allCities = City::with('towns')->get();
+        $leafFoodCategories = FoodCategory::whereNotNull('parent_id')->get();
 
         $getRandomCityTown = function () use ($allCities) {
             $city = $allCities->random();
@@ -240,8 +244,8 @@ class DatabaseSeeder extends Seeder
                 'description' => rand(0, 1) ? 'Surplus food from today\'s preparation. Good quality and fresh.' : null,
                 'quantity' => rand(1, 50),
                 'quantity_unit' => $units[array_rand($units)],
+                'food_category_id' => $leafFoodCategories->isNotEmpty() ? $leafFoodCategories->random()->id : null,
                 'pickup_address' => $addresses[array_rand($addresses)] . ', ' . ($donorUser->city ?? 'Amman'),
-                'latitude' => $latitude,
                 'longitude' => $longitude,
                 'pickup_time' => $pickupTime,
                 'expiry_time' => rand(0, 1) ? $pickupTime->copy()->addHours(rand(4, 48)) : null,

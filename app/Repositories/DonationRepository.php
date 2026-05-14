@@ -23,7 +23,7 @@ class DonationRepository extends BaseRepository
             ->where('status', 'pending')
             ->where(function ($q) {
                 $q->whereNull('expiry_time')
-                  ->orWhere('expiry_time', '>', now());
+                    ->orWhere('expiry_time', '>', now());
             })
             ->latest()
             ->get();
@@ -43,7 +43,7 @@ class DonationRepository extends BaseRepository
         }
 
         return $query->select([
-            'id', 'user_id', 'food_type', 'quantity', 'quantity_unit',
+            'id', 'user_id', 'food_category_id', 'food_type', 'quantity', 'quantity_unit',
             'pickup_address', 'pickup_time', 'status', 'created_at',
             'volunteers_needed', 'volunteers_count',
         ]);

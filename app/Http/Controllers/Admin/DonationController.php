@@ -26,6 +26,10 @@ class DonationController extends Controller
     {
         $query = $this->donationService->getDatatableData();
 
+        if ($request->filled('status')) {
+            $query->where('status', $request->string('status'));
+        }
+
         return DataTables::eloquent($query)
             ->addColumn('donor_name', fn (Donation $d) => $d->donor->name ?? '-')
             ->addColumn('actions', function (Donation $d) {
@@ -38,7 +42,14 @@ class DonationController extends Controller
 
     public function show(int $id): JsonResponse
     {
-        $donation = Donation::with(['donor', 'requests.charity', 'assignments.volunteer'])
+        $donation = Donation::with([
+            'donor',
+            'requests.charity',
+            'assignments.volunteer',
+            'cityRelation:id,name',
+            'town:id,name',
+            'foodCategory.parent:id,name',
+        ])
             ->findOrFail($id);
 
         return response()->json($donation);
