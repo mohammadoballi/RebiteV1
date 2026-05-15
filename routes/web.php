@@ -37,16 +37,34 @@ Route::get('/safety-guidelines', function () {
     return view('pages.safety-guidelines');
 })->name('safety-guidelines');
 Route::get('/home', function () {
-  $role = auth()->user()->roles->pluck('display_name')->implode(', ');
-  if ($role == 'admin') {
-    return redirect()->route('admin.dashboard');
-  } elseif ($role == 'donor') {
-    return redirect()->route('donor.dashboard');
-  } elseif ($role == 'charity') {
-    return redirect()->route('charity.dashboard');
-  } elseif ($role == 'volunteer') {
-    return redirect()->route('volunteer.dashboard');
+
+  if (!auth()->check()) {
+      return redirect()->route('login');
   }
+
+  $user = auth()->user();
+
+  // If user has no roles → logout
+  if ($user->roles->isEmpty()) {
+      auth()->logout();
+      return redirect()->route('login');
+  }
+
+  // Check roles properly
+  if ($user->hasRole('admin')) {
+      return redirect()->route('admin.dashboard');
+  } elseif ($user->hasRole('donor')) {
+      return redirect()->route('donor.dashboard');
+  } elseif ($user->hasRole('charity')) {
+      return redirect()->route('charity.dashboard');
+  } elseif ($user->hasRole('volunteer')) {
+      return redirect()->route('volunteer.dashboard');
+  }
+
+  // If role not recognized → logout
+  auth()->logout();
+  return redirect()->route('login');
+
 })->name('home');
 // Language Switcher
 Route::get('language/{locale}', [LanguageController::class, 'switch'])->name('language.switch');
