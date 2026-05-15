@@ -115,7 +115,7 @@
 
 {{-- Sidebar --}}
 <aside class="rb-sidebar" id="sidebar">
-    <div class="sidebar-header">{{ __('Navigation') }}</div>
+    <div class="sidebar-header">{{ __('navigation.header') }}</div>
     <nav class="nav flex-column">
         <a class="nav-link {{ request()->routeIs('volunteer.dashboard') ? 'active' : '' }}"
            href="{{ route('volunteer.dashboard') }}">
@@ -123,19 +123,19 @@
         </a>
         <a class="nav-link {{ request()->routeIs('volunteer.donations.*') ? 'active' : '' }}"
            href="{{ route('volunteer.donations.index') }}">
-            <i class="fas fa-store"></i> {{ __('Browse Donations') }}
+            <i class="fas fa-store"></i> {{ __('navigation.browse_donations') }}
         </a>
         <a class="nav-link {{ request()->routeIs('volunteer.assignments.*') ? 'active' : '' }}"
            href="{{ route('volunteer.assignments.index') }}">
-            <i class="fas fa-truck"></i> {{ __('My Assignments') }}
+            <i class="fas fa-truck"></i> {{ __('navigation.my_assignments') }}
         </a>
         <a class="nav-link {{ request()->routeIs('volunteer.ratings') ? 'active' : '' }}"
            href="{{ route('volunteer.ratings') }}">
-            <i class="fas fa-star"></i> {{ __('My Ratings') }}
+            <i class="fas fa-star"></i> {{ __('navigation.my_ratings') }}
         </a>
         <a class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}"
            href="{{ route('profile.show') }}">
-            <i class="fas fa-user"></i> {{ __('Profile') }}
+            <i class="fas fa-user"></i> {{ __('navigation.profile') }}
         </a>
     </nav>
 </aside>
@@ -173,7 +173,7 @@
             <ul class="dropdown-menu dropdown-menu-end">
                 <li>
                     <a class="dropdown-item" href="{{ route('profile.show') }}">
-                        <i class="fas fa-user me-2"></i> {{ __('Profile') }}
+                        <i class="fas fa-user me-2"></i> {{ __('navigation.profile') }}
                     </a>
                 </li>
                 <li><hr class="dropdown-divider"></li>
@@ -181,7 +181,7 @@
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
                         <button class="dropdown-item text-danger" type="submit">
-                            <i class="fas fa-sign-out-alt me-2"></i> {{ __('Logout') }}
+                            <i class="fas fa-sign-out-alt me-2"></i> {{ __('navigation.logout') }}
                         </button>
                     </form>
                 </li>
@@ -220,10 +220,10 @@
 </script>
 
 @if(session('success'))
-<script>Swal.fire({ icon: 'success', title: '{{ __("Success") }}', text: '{{ session("success") }}', confirmButtonColor: '#28a745' });</script>
+<script>Swal.fire({ icon: 'success', title: '{{ __("general.success") }}', text: '{{ session("success") }}', confirmButtonColor: '#28a745' });</script>
 @endif
 @if(session('error'))
-<script>Swal.fire({ icon: 'error', title: '{{ __("Error") }}', text: '{{ session("error") }}', confirmButtonColor: '#28a745' });</script>
+<script>Swal.fire({ icon: 'error', title: '{{ __("general.error") }}', text: '{{ session("error") }}', confirmButtonColor: '#28a745' });</script>
 @endif
 
 <script src="{{ asset('js/common.js') }}"></script>

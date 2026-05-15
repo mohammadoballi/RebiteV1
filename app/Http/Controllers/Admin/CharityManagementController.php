@@ -26,14 +26,32 @@ class CharityManagementController extends Controller
             ->addColumn('donation_id', fn ($r) => $r->donation_id)
             ->addColumn('donation_food', fn ($r) => $r->donation->food_type ?? '-')
             ->addColumn('message', fn ($r) => \Illuminate\Support\Str::limit((string) $r->message, 80))
-            ->addColumn('donation_status', fn ($r) => $r->donation->status ?? '-')
+            ->addColumn('donation_status', function ($r) {
+                $status = $r->donation->status ?? null;
+                if (!$status) {
+                    return '-';
+                }
+
+                $key = 'donations.' . $status;
+
+                return \Illuminate\Support\Facades\Lang::has($key)
+                    ? __($key)
+                    : ucfirst(str_replace('_', ' ', $status));
+            })
             ->addColumn('status_badge', function ($r) {
+                $label = match ($r->status) {
+                    'pending'  => __('general.pending'),
+                    'approved' => __('general.approved'),
+                    'rejected' => __('general.rejected'),
+                    default    => ucfirst((string) $r->status),
+                };
+
                 return '<span class="badge bg-' . match ($r->status) {
                     'pending' => 'warning',
                     'approved' => 'success',
                     'rejected' => 'danger',
                     default => 'secondary'
-                } . '">' . ucfirst($r->status) . '</span>';
+                } . '">' . e($label) . '</span>';
             })
             ->rawColumns(['status_badge'])
             ->toJson();

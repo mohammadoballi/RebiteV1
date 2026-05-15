@@ -1,10 +1,10 @@
 @extends('layouts.admin')
 
-@section('title', __('Settings'))
+@section('title', __('navigation.settings'))
 
 @section('content')
 <div class="page-header d-flex flex-wrap align-items-center justify-content-between gap-2">
-    <h1><i class="fas fa-cogs me-2"></i>{{ __('Settings') }}</h1>
+    <h1><i class="fas fa-cogs me-2"></i>{{ __('navigation.settings') }}</h1>
 </div>
 
 <div class="card">

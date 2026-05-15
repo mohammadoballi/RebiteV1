@@ -6,11 +6,11 @@
 <div class="page-header d-flex flex-wrap align-items-center justify-content-between gap-2">
     <h1><i class="fas fa-tachometer-alt me-2"></i>{{ __('general.welcome') }}, {{ auth()->user()->name }}!</h1>
     <form method="get" action="{{ route('admin.dashboard') }}" class="d-flex flex-wrap gap-2 align-items-center">
-        <label class="small text-muted mb-0">{{ __('Year') }}</label>
+        <label class="small text-muted mb-0">{{ __('dashboard.year') }}</label>
         <input type="number" name="year" class="form-control form-control-sm" style="width:90px" value="{{ $data['revenue_filter_year'] ?? now()->year }}" min="2000" max="2100">
-        <label class="small text-muted mb-0">{{ __('Month') }}</label>
+        <label class="small text-muted mb-0">{{ __('dashboard.month') }}</label>
         <input type="number" name="month" class="form-control form-control-sm" style="width:70px" value="{{ $data['revenue_filter_month'] ?? now()->month }}" min="1" max="12">
-        <button type="submit" class="btn btn-sm btn-outline-success">{{ __('Apply') }}</button>
+        <button type="submit" class="btn btn-sm btn-outline-success">{{ __('dashboard.apply') }}</button>
     </form>
 </div>
 
@@ -76,7 +76,7 @@
                         <i class="fas fa-store fa-lg text-secondary"></i>
                     </div>
                     <div>
-                        <h6 class="text-muted mb-1 small">{{ __('Open marketplace donations') }}</h6>
+                        <h6 class="text-muted mb-1 small">{{ __('dashboard.open_marketplace_donations') }}</h6>
                         <h3 class="mb-0 fw-bold text-dark">{{ $data['pending_donations'] ?? 0 }}</h3>
                     </div>
                 </div>
@@ -95,7 +95,7 @@
                         <i class="fas fa-check-double fa-lg" style="color:#0dcaf0"></i>
                     </div>
                     <div>
-                        <h6 class="text-muted mb-1 small">{{ __('Claimed by charity') }}</h6>
+                        <h6 class="text-muted mb-1 small">{{ __('dashboard.claimed_by_charity') }}</h6>
                         <h3 class="mb-0 fw-bold text-dark">{{ $data['accepted_donations'] ?? 0 }}</h3>
                     </div>
                 </div>
@@ -126,9 +126,9 @@
                     <i class="fas fa-dollar-sign fa-lg text-success"></i>
                 </div>
                 <div>
-                    <h6 class="text-muted mb-1 small">{{ __('Subscription revenue (month)') }}</h6>
+                    <h6 class="text-muted mb-1 small">{{ __('dashboard.subscription_revenue_month') }}</h6>
                     <h3 class="mb-0 fw-bold text-success">{{ $data['subscription_month_formatted'] ?? '$0.00' }}</h3>
-                    <small class="text-muted">{{ __('All time') }}: {{ $data['subscription_total_formatted'] ?? '$0.00' }}</small>
+                    <small class="text-muted">{{ __('dashboard.all_time') }}: {{ $data['subscription_total_formatted'] ?? '$0.00' }}</small>
                 </div>
             </div>
         </div>
@@ -143,7 +143,7 @@
                         <i class="fas fa-hands-helping fa-lg" style="color:#6f42c1"></i>
                     </div>
                     <div>
-                        <h6 class="text-muted mb-1 small">{{ __('Charity claims (records)') }}</h6>
+                        <h6 class="text-muted mb-1 small">{{ __('dashboard.charity_claims_records') }}</h6>
                         <h3 class="mb-0 fw-bold text-dark">{{ \App\Models\DonationRequest::count() }}</h3>
                     </div>
                 </div>
@@ -162,7 +162,7 @@ a:hover .rb-kpi-card { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgb
     <div class="col-lg-4">
         <div class="card h-100 border-0 shadow-sm">
             <div class="card-header bg-white fw-semibold">
-                <i class="fas fa-chart-pie me-1 text-success"></i> {{ __('Donations by status') }}
+                <i class="fas fa-chart-pie me-1 text-success"></i> {{ __('dashboard.donations_by_status') }}
             </div>
             <div class="card-body d-flex align-items-center justify-content-center">
                 <canvas id="donationsByStatusChart" height="220"></canvas>
@@ -172,7 +172,7 @@ a:hover .rb-kpi-card { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgb
     <div class="col-lg-4">
         <div class="card h-100 border-0 shadow-sm">
             <div class="card-header bg-white fw-semibold">
-                <i class="fas fa-chart-bar me-1 text-success"></i> {{ __('Subscription revenue') }} (USD)
+                <i class="fas fa-chart-bar me-1 text-success"></i> {{ __('dashboard.subscription_revenue') }} (USD)
             </div>
             <div class="card-body">
                 <canvas id="subscriptionRevenueChart" height="220"></canvas>
@@ -182,7 +182,7 @@ a:hover .rb-kpi-card { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgb
     <div class="col-lg-4">
         <div class="card h-100 border-0 shadow-sm">
             <div class="card-header bg-white fw-semibold">
-                <i class="fas fa-chart-pie me-1 text-success"></i> {{ __('Users by Role') }}
+                <i class="fas fa-chart-pie me-1 text-success"></i> {{ __('dashboard.users_by_role') }}
             </div>
             <div class="card-body d-flex align-items-center justify-content-center">
                 <canvas id="usersByRoleChart" height="220"></canvas>
@@ -195,7 +195,7 @@ a:hover .rb-kpi-card { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgb
     <div class="col-12">
         <div class="card h-100 border-0 shadow-sm">
             <div class="card-header bg-white fw-semibold">
-                <i class="fas fa-chart-bar me-1 text-success"></i> {{ __('dashboard.total_donations') }} — {{ __('Monthly') }}
+                <i class="fas fa-chart-bar me-1 text-success"></i> {{ __('dashboard.total_donations') }} — {{ __('dashboard.monthly') }}
             </div>
             <div class="card-body">
                 <canvas id="monthlyDonationsChart" height="260"></canvas>
@@ -249,7 +249,7 @@ document.addEventListener('DOMContentLoaded', function () {
         data: {
             labels: subLabels,
             datasets: [{
-                label: '{{ __("Revenue (USD)") }}',
+                label: '{{ __("dashboard.revenue_usd") }}',
                 data: subValues,
                 borderColor: green,
                 backgroundColor: 'rgba(25,135,84,.12)',

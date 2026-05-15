@@ -224,7 +224,7 @@
 
 {{-- Sidebar --}}
 <aside class="rb-sidebar" id="sidebar">
-    <div class="sidebar-header">{{ __('Navigation') }}</div>
+    <div class="sidebar-header">{{ __('navigation.header') }}</div>
     <nav class="nav flex-column">
         <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}"
            href="{{ route('admin.dashboard') }}">
@@ -240,15 +240,15 @@
         </a>
         <a class="nav-link {{ request()->routeIs('admin.charity-management.*') ? 'active' : '' }}"
            href="{{ route('admin.charity-management.index') }}">
-            <i class="fas fa-hands-helping"></i> {{ __('Charity Management') }}
+            <i class="fas fa-hands-helping"></i> {{ __('navigation.charity_management') }}
         </a>
         <a class="nav-link {{ request()->routeIs('admin.food-categories.*') ? 'active' : '' }}"
            href="{{ route('admin.food-categories.index') }}">
-            <i class="fas fa-sitemap"></i> {{ __('Food Categories') }}
+            <i class="fas fa-sitemap"></i> {{ __('navigation.food_categories') }}
         </a>
         <a class="nav-link {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}"
            href="{{ route('admin.settings.index') }}">
-            <i class="fas fa-cogs"></i> {{ __('Settings') }}
+            <i class="fas fa-cogs"></i> {{ __('navigation.settings') }}
         </a>
     </nav>
 </aside>
@@ -290,7 +290,7 @@
             <ul class="dropdown-menu dropdown-menu-end">
                 <li>
                     <a class="dropdown-item" href="{{ route('profile.show') }}">
-                        <i class="fas fa-user me-2"></i> {{ __('Profile') }}
+                        <i class="fas fa-user me-2"></i> {{ __('navigation.profile') }}
                     </a>
                 </li>
                 <li><hr class="dropdown-divider"></li>
@@ -298,7 +298,7 @@
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
                         <button class="dropdown-item text-danger" type="submit">
-                            <i class="fas fa-sign-out-alt me-2"></i> {{ __('Logout') }}
+                            <i class="fas fa-sign-out-alt me-2"></i> {{ __('navigation.logout') }}
                         </button>
                     </form>
                 </li>
@@ -340,11 +340,11 @@
 </script>
 
 @if(session('success'))
-<script>Swal.fire({ icon: 'success', title: '{{ __("Success") }}', text: '{{ session("success") }}', confirmButtonColor: '#28a745' });</script>
+<script>Swal.fire({ icon: 'success', title: '{{ __("general.success") }}', text: '{{ session("success") }}', confirmButtonColor: '#28a745' });</script>
 @endif
 
 @if(session('error'))
-<script>Swal.fire({ icon: 'error', title: '{{ __("Error") }}', text: '{{ session("error") }}', confirmButtonColor: '#28a745' });</script>
+<script>Swal.fire({ icon: 'error', title: '{{ __("general.error") }}', text: '{{ session("error") }}', confirmButtonColor: '#28a745' });</script>
 @endif
 
 <script src="{{ asset('js/common.js') }}"></script>

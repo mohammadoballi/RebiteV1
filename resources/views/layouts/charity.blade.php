@@ -115,7 +115,7 @@
 
 {{-- Sidebar --}}
 <aside class="rb-sidebar" id="sidebar">
-    <div class="sidebar-header">{{ __('Navigation') }}</div>
+    <div class="sidebar-header">{{ __('navigation.header') }}</div>
     <nav class="nav flex-column">
         <a class="nav-link {{ request()->routeIs('charity.dashboard') ? 'active' : '' }}"
            href="{{ route('charity.dashboard') }}">
@@ -123,22 +123,22 @@
         </a>
         <a class="nav-link {{ request()->routeIs('charity.donations.*') ? 'active' : '' }}"
            href="{{ route('charity.donations.index') }}">
-            <i class="fas fa-search"></i> {{ __('Available Donations') }}
+            <i class="fas fa-search"></i> {{ __('navigation.available_donations') }}
         </a>
         <a class="nav-link {{ request()->routeIs('charity.my-requests*') ? 'active' : '' }}"
            href="{{ route('charity.my-requests') }}">
-            <i class="fas fa-clipboard-list"></i> {{ __('My Requests') }}
+            <i class="fas fa-clipboard-list"></i> {{ __('navigation.my_requests') }}
         </a>
         <a class="nav-link {{ request()->routeIs('charity.subscription.*') ? 'active' : '' }}"
            href="{{ route('charity.subscription.index') }}">
-            <i class="fas fa-credit-card"></i> {{ __('Subscription') }}
+            <i class="fas fa-credit-card"></i> {{ __('navigation.subscription') }}
             @if(!auth()->user()->hasActiveSubscription())
                 <span class="badge bg-warning text-dark ms-auto">!</span>
             @endif
         </a>
         <a class="nav-link {{ request()->routeIs('profile.*') ? 'active' : '' }}"
            href="{{ route('profile.show') }}">
-            <i class="fas fa-user"></i> {{ __('Profile') }}
+            <i class="fas fa-user"></i> {{ __('navigation.profile') }}
         </a>
     </nav>
 </aside>
@@ -176,7 +176,7 @@
             <ul class="dropdown-menu dropdown-menu-end">
                 <li>
                     <a class="dropdown-item" href="{{ route('profile.show') }}">
-                        <i class="fas fa-user me-2"></i> {{ __('Profile') }}
+                        <i class="fas fa-user me-2"></i> {{ __('navigation.profile') }}
                     </a>
                 </li>
                 <li><hr class="dropdown-divider"></li>
@@ -184,7 +184,7 @@
                     <form action="{{ route('logout') }}" method="POST">
                         @csrf
                         <button class="dropdown-item text-danger" type="submit">
-                            <i class="fas fa-sign-out-alt me-2"></i> {{ __('Logout') }}
+                            <i class="fas fa-sign-out-alt me-2"></i> {{ __('navigation.logout') }}
                         </button>
                     </form>
                 </li>
@@ -223,10 +223,10 @@
 </script>
 
 @if(session('success'))
-<script>Swal.fire({ icon: 'success', title: '{{ __("Success") }}', text: '{{ session("success") }}', confirmButtonColor: '#28a745' });</script>
+<script>Swal.fire({ icon: 'success', title: '{{ __("general.success") }}', text: '{{ session("success") }}', confirmButtonColor: '#28a745' });</script>
 @endif
 @if(session('error'))
-<script>Swal.fire({ icon: 'error', title: '{{ __("Error") }}', text: '{{ session("error") }}', confirmButtonColor: '#28a745' });</script>
+<script>Swal.fire({ icon: 'error', title: '{{ __("general.error") }}', text: '{{ session("error") }}', confirmButtonColor: '#28a745' });</script>
 @endif
 
 <script src="{{ asset('js/common.js') }}"></script>

@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'title' => 'Food Categories',
+    'add_category' => 'Add category',
+    'parent_optional' => 'Parent (optional)',
+    'top_level' => 'Top level',
+    'name' => 'Name',
+    'sort' => 'Sort',
+    'add' => 'Add',
+    'delete_confirm' => 'Delete this category?',
+    'no_subcategories' => 'No subcategories yet.',
+    'delete_parent_confirm' => 'Delete parent and ensure no donations reference it?',
+    'remove_children_first' => 'Remove children first',
+    'delete_parent' => 'Delete parent',
+    'empty' => 'No categories yet. Add a top-level category to get started.',
+    'created' => 'Category created.',
+    'updated' => 'Category updated.',
+    'deleted' => 'Category deleted.',
+    'remove_children_error' => 'Remove child categories first.',
+    'cannot_delete_in_use' => 'Cannot delete: donations use this category.',
+    'label' => 'Food category',
+    'select_food_type' => 'Select food type',
+    'select_subcategory' => 'Select a specific food subcategory.',
+    'all_food_types' => 'All food types',
+];

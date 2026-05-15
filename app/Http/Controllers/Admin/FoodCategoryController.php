@@ -22,27 +22,27 @@ class FoodCategoryController extends Controller
     {
         FoodCategory::create($request->validated());
 
-        return back()->with('success', __('Category created.'));
+        return back()->with('success', __('food_categories.created'));
     }
 
     public function update(UpdateFoodCategoryRequest $request, FoodCategory $foodCategory): RedirectResponse
     {
         $foodCategory->update($request->validated());
 
-        return back()->with('success', __('Category updated.'));
+        return back()->with('success', __('food_categories.updated'));
     }
 
     public function destroy(FoodCategory $foodCategory): RedirectResponse
     {
         if ($foodCategory->children()->exists()) {
-            return back()->with('error', __('Remove child categories first.'));
+            return back()->with('error', __('food_categories.remove_children_error'));
         }
         if ($foodCategory->donations()->exists()) {
-            return back()->with('error', __('Cannot delete: donations use this category.'));
+            return back()->with('error', __('food_categories.cannot_delete_in_use'));
         }
 
         $foodCategory->delete();
 
-        return back()->with('success', __('Category deleted.'));
+        return back()->with('success', __('food_categories.deleted'));
     }
 }

@@ -1,11 +1,11 @@
 @extends('layouts.admin')
 
-@section('title', __('Charity Management'))
+@section('title', __('navigation.charity_management'))
 
 @section('content')
 <div class="page-header d-flex flex-wrap align-items-center justify-content-between gap-2">
-    <h1><i class="fas fa-hands-helping me-2"></i>{{ __('Charity Management') }}</h1>
-    <p class="text-muted small mb-0">{{ __('Read-only overview of charity claims. Charities accept donations directly without admin approval.') }}</p>
+    <h1><i class="fas fa-hands-helping me-2"></i>{{ __('navigation.charity_management') }}</h1>
+    <p class="text-muted small mb-0">{{ __('charity_management.description') }}</p>
 </div>
 
 <div class="card border-0 shadow-sm">
@@ -15,13 +15,13 @@
                 <thead>
                     <tr>
                         <th>ID</th>
-                        <th>{{ __('Charity') }}</th>
-                        <th>{{ __('Donation') }} #</th>
+                        <th>{{ __('charity_management.charity') }}</th>
+                        <th>{{ __('charity_management.donation') }} #</th>
                         <th>{{ __('donations.food_type') }}</th>
-                        <th>{{ __('Donation status') }}</th>
-                        <th>{{ __('Request') }}</th>
-                        <th>{{ __('Message') }}</th>
-                        <th>{{ __('Created At') }}</th>
+                        <th>{{ __('charity_management.donation_status') }}</th>
+                        <th>{{ __('charity_management.request') }}</th>
+                        <th>{{ __('charity_management.message') }}</th>
+                        <th>{{ __('charity_management.created_at') }}</th>
                     </tr>
                 </thead>
             </table>
