@@ -87,8 +87,8 @@
                 <tbody>
                     @forelse($recentRequests ?? [] as $request)
                         <tr>
-                            <td>{{ $request->donation->food_type ?? '—' }}</td>
-                            <td>{{ $request->donation->quantity ?? '—' }} {{ __('donations.' . ($request->donation->quantity_unit ?? 'kg')) }}</td>
+                            <td>{{ $request->donation->items_summary ?? ($request->donation->food_type ?? '—') }}</td>
+                            <td>{{ $request->donation->quantities_summary ?: (($request->donation->quantity ?? '—') . ' ' . ($request->donation->quantity_unit && $request->donation->quantity_unit !== 'mixed' ? __('donations.' . $request->donation->quantity_unit) : '')) }}</td>
                             <td><x-status-badge :status="$request->status" /></td>
                             <td>{{ $request->created_at?->format('M d, Y H:i') ?? '—' }}</td>
                         </tr>

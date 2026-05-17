@@ -20,11 +20,16 @@ class DashboardController extends Controller
         ];
 
         $recentRequests = DonationRequest::where('charity_id', $charityId)
-            ->with('donation')
+            ->with(['donation.items'])
             ->latest()
             ->limit(5)
             ->get();
 
-        return view('charity.dashboard', compact('stats', 'recentRequests'));
+        return view('charity.dashboard', [
+            'availableDonations' => $stats['available'],
+            'myRequestsCount' => $stats['my_requests'],
+            'approvedRequests' => $stats['approved_requests'],
+            'recentRequests' => $recentRequests,
+        ]);
     }
 }

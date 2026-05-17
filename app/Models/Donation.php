@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\DonationItemAggregator;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -20,6 +21,7 @@ class Donation extends Model
 
     protected $fillable = [
         'user_id',
+        'accepted_charity_id',
         'city_id',
         'town_id',
         'food_category_id',
@@ -33,6 +35,7 @@ class Donation extends Model
         'pickup_time',
         'expiry_time',
         'status',
+        'admin_approved_at',
         'notes',
         'image',
         'volunteers_needed',
@@ -44,19 +47,25 @@ class Donation extends Model
     protected $casts = [
         'pickup_time' => 'datetime',
         'expiry_time' => 'datetime',
+        'admin_approved_at' => 'datetime',
         'volunteers_needed' => 'integer',
         'delivery_volunteers_needed' => 'integer',
         'packaging_volunteers_needed' => 'integer',
         'volunteers_count' => 'integer',
     ];
 
-    protected $appends = ['is_full', 'items_summary'];
+    protected $appends = ['is_full', 'items_summary', 'quantities_summary'];
 
     // ── Relationships ──
 
     public function donor()
     {
         return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function acceptedCharity()
+    {
+        return $this->belongsTo(User::class, 'accepted_charity_id');
     }
 
     public function cityRelation()
@@ -113,12 +122,67 @@ class Donation extends Model
         return $this->volunteers_count >= $this->volunteers_needed;
     }
 
+    public function volunteersNeededForType(string $type): int
+    {
+        return $type === DonationAssignment::TYPE_PACKAGING
+            ? (int) $this->packaging_volunteers_needed
+            : (int) $this->delivery_volunteers_needed;
+    }
+
+    public function activeAssignmentsCount(string $type): int
+    {
+        if ($this->relationLoaded('assignments')) {
+            return $this->assignments
+                ->where('assignment_type', $type)
+                ->whereNotIn('status', [DonationAssignment::STATUS_CANCELLED])
+                ->count();
+        }
+
+        return $this->assignments()
+            ->where('assignment_type', $type)
+            ->whereNotIn('status', [DonationAssignment::STATUS_CANCELLED])
+            ->count();
+    }
+
+    public function hasOpenSlotForType(string $type): bool
+    {
+        $needed = $this->volunteersNeededForType($type);
+
+        if ($needed <= 0) {
+            return false;
+        }
+
+        return $this->activeAssignmentsCount($type) < $needed;
+    }
+
+    public function isFullForType(string $type): bool
+    {
+        return ! $this->hasOpenSlotForType($type);
+    }
+
     public function getItemsSummaryAttribute(): string
     {
         if ($this->relationLoaded('items') && $this->items->count() > 0) {
             return $this->items->map(fn ($i) => $i->food_type)->implode(', ');
         }
+
         return $this->food_type ?? '';
+    }
+
+    public function getQuantitiesSummaryAttribute(): string
+    {
+        if ($this->relationLoaded('items') && $this->items->isNotEmpty()) {
+            return DonationItemAggregator::summarizeQuantities($this->items);
+        }
+
+        $qty = trim((string) ($this->quantity ?? ''));
+        $unit = trim((string) ($this->quantity_unit ?? ''));
+
+        if ($qty === '') {
+            return '';
+        }
+
+        return $unit !== '' && $unit !== 'mixed' ? $qty . ' ' . $unit : $qty;
     }
 
     // ── Scopes ──
@@ -139,6 +203,9 @@ class Donation extends Model
     public function scopeAvailable($query)
     {
         return $query->where('status', self::STATUS_PENDING)
+            ->whereNotNull('admin_approved_at')
+            ->whereNull('accepted_charity_id')
+            ->whereDoesntHave('requests', fn ($q) => $q->where('status', DonationRequest::STATUS_APPROVED))
             ->where(function ($q) {
                 $q->whereNull('expiry_time')
                     ->orWhere('expiry_time', '>', now());
@@ -195,5 +262,16 @@ class Donation extends Model
                     ->where('donation_assignments.assignment_type', $type)
                     ->whereNotIn('donation_assignments.status', ['cancelled']);
             });
+    }
+
+    /**
+     * Donations that still need at least one delivery or packaging volunteer.
+     */
+    public function scopeNeedsAnyVolunteerType($query)
+    {
+        return $query->where(function ($q) {
+            $q->where(fn ($inner) => $inner->needsVolunteerType(DonationAssignment::TYPE_DELIVERY))
+                ->orWhere(fn ($inner) => $inner->needsVolunteerType(DonationAssignment::TYPE_PACKAGING));
+        });
     }
 }

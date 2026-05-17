@@ -20,10 +20,16 @@ class DashboardController extends Controller
         ];
 
         $recentDonations = Donation::where('user_id', $userId)
+            ->with('foodCategory.parent')
             ->latest()
             ->limit(5)
             ->get();
 
-        return view('donor.dashboard', compact('stats', 'recentDonations'));
+        return view('donor.dashboard', [
+            'totalDonations' => $stats['total'],
+            'pendingCount' => $stats['pending'],
+            'completedCount' => $stats['completed'],
+            'recentDonations' => $recentDonations,
+        ]);
     }
 }

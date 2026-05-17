@@ -2,50 +2,42 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreRatingRequest;
 use App\Models\Rating;
 use App\Models\Setting;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class RatingController extends Controller
 {
-    public function store(Request $request): JsonResponse
+    public function store(StoreRatingRequest $request): JsonResponse
     {
-        $request->validate([
-            'rateable_id'   => ['required', 'integer'],
-            'rateable_type' => ['required', 'string', 'in:user'],
-            'rating'        => ['required', 'integer', 'min:1', 'max:5'],
-            'comment'       => ['nullable', 'string', 'max:500'],
+        $data = $request->validated();
+        $targetUser = User::findOrFail($data['rateable_id']);
+
+        Rating::create([
+            'rater_id'      => auth()->id(),
+            'donation_id'   => $data['donation_id'] ?? null,
+            'rateable_id'   => $targetUser->id,
+            'rateable_type' => User::class,
+            'rating'        => $data['rating'],
+            'comment'       => $data['comment'] ?? null,
         ]);
 
-        $targetUser = User::findOrFail($request->rateable_id);
+        $pointsKey = $targetUser->hasRole('volunteer')
+            ? 'volunteer_rating_points'
+            : 'donor_rating_points';
+        $defaultPoints = $targetUser->hasRole('volunteer') ? 3 : 0;
+        $points = Setting::getInt($pointsKey, $defaultPoints);
 
-        $existing = Rating::where('rater_id', auth()->id())
-            ->where('rateable_id', $targetUser->id)
-            ->where('rateable_type', User::class)
-            ->first();
-
-        if ($existing) {
-            $existing->update([
-                'rating'  => $request->rating,
-                'comment' => $request->comment,
-            ]);
-            $msg = __('Rating updated successfully.');
-        } else {
-            Rating::create([
-                'rater_id'      => auth()->id(),
-                'rateable_id'   => $targetUser->id,
-                'rateable_type' => User::class,
-                'rating'        => $request->rating,
-                'comment'       => $request->comment,
-            ]);
-
-            $targetUser->addPoints(Setting::getInt('volunteer_rating_points', 3));
-            $msg = __('Rating submitted successfully.');
+        if ($points > 0) {
+            $targetUser->addPoints($points);
         }
 
-        return response()->json(['message' => $msg]);
+        return response()->json([
+            'message'     => __('Rating submitted successfully.'),
+            'rateable_id' => $targetUser->id,
+        ], 201);
     }
 
     public function myRatings(): JsonResponse

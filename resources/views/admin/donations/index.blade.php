@@ -28,7 +28,7 @@
                     <tr>
                         <th>ID</th>
                         <th>{{ __('donations.donor') }}</th>
-                        <th>{{ __('donations.food_type') }}</th>
+                        <th>{{ __('Food Items') }}</th>
                         <th>{{ __('donations.quantity') }}</th>
                         <th>{{ __('donations.status') }}</th>
                         <th>{{ __('donations.pickup_time') }}</th>
@@ -60,6 +60,10 @@
                     <div class="col-md-6">
                         <label class="form-label text-muted small mb-0">{{ __('donations.donor') }}</label>
                         <p class="fw-semibold mb-2" id="donation-donor">-</p>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label text-muted small mb-0">{{ __('Food Items') }}</label>
+                        <div id="donation-items-list" class="fw-semibold mb-2">-</div>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label text-muted small mb-0">{{ __('donations.food_type') }}</label>
@@ -115,6 +119,15 @@
 
                 <hr>
 
+                <div class="d-flex flex-wrap gap-2 mb-3" id="donation-approve-row">
+                    <button type="button" class="btn btn-success" id="btn-approve-donation">
+                        <i class="fas fa-check-circle me-1"></i> {{ __('Approve for charities') }}
+                    </button>
+                    <span class="badge bg-success align-self-center d-none" id="donation-approved-badge">
+                        <i class="fas fa-check me-1"></i> {{ __('Published for charities') }}
+                    </span>
+                </div>
+
                 {{-- Status Update --}}
                 <div class="row align-items-end g-2">
                     <div class="col-md-8">
@@ -150,6 +163,7 @@
         donationsDatatable: '{{ route("admin.donations.datatable") }}',
         donationsShow:      '{{ route("admin.donations.show", ":id") }}',
         donationsStatus:    '{{ route("admin.donations.update-status", ":id") }}',
+        donationsApprove:   '{{ route("admin.donations.approve", ":id") }}',
         donationsDestroy:   '{{ route("admin.donations.destroy", ":id") }}'
     };
 </script>

@@ -3,8 +3,14 @@
 @section('title', __('Browse Donations'))
 
 @section('content')
+@php
+    $defaultAssignmentType = $defaultAssignmentType ?? (auth()->user()->role_type ?? 'delivery');
+@endphp
 <div class="page-header d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
-    <h1><i class="fas fa-store me-2"></i>{{ __('Browse Donations') }}</h1>
+    <div>
+        <h1 class="mb-1"><i class="fas fa-store me-2"></i>{{ __('Browse Donations') }}</h1>
+        <p class="text-muted small mb-0">{{ __('Choose Delivery or Packaging when you assign yourself to a donation.') }}</p>
+    </div>
     <div>
         <span class="badge bg-success fs-6">{{ $donations->total() }} {{ __('Available') }}</span>
         <span class="badge bg-warning text-dark fs-6 ms-1"><i class="fas fa-coins me-1"></i>{{ auth()->user()->points }} {{ __('Points') }}</span>
@@ -87,9 +93,11 @@
                         <i class="fas fa-users me-1"></i>{{ $donation->volunteers_count }}/{{ $donation->volunteers_needed }}
                     </span>
                     <br>
-                    <span class="badge bg-dark bg-opacity-75 rounded-pill mt-1" style="font-size: .65rem">
-                        <i class="fas fa-truck"></i> {{ $donation->delivery_volunteers_needed }}
-                        · <i class="fas fa-box"></i> {{ $donation->packaging_volunteers_needed }}
+                    <span class="badge bg-info rounded-pill mt-1" style="font-size: .65rem">
+                        <i class="fas fa-truck"></i> {{ $donation->activeAssignmentsCount('delivery') }}/{{ $donation->delivery_volunteers_needed }}
+                    </span>
+                    <span class="badge bg-secondary rounded-pill mt-1" style="font-size: .65rem">
+                        <i class="fas fa-box"></i> {{ $donation->activeAssignmentsCount('packaging') }}/{{ $donation->packaging_volunteers_needed }}
                     </span>
                 </span>
                 <span class="position-absolute bottom-0 start-0 m-2 badge bg-dark bg-opacity-75 rounded-pill">
@@ -221,13 +229,32 @@
 
                 <hr>
                 <input type="hidden" id="assign-donation-id">
-                <div class="d-flex align-items-center justify-content-between">
+                <div class="mb-3" id="assign-type-section">
+                    <label class="form-label fw-semibold mb-2">{{ __('Choose assignment type') }}</label>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <input type="radio" class="btn-check" name="assignment_type" id="assign-type-delivery" value="delivery" autocomplete="off">
+                            <label class="btn btn-outline-info w-100 h-100 text-start py-2" for="assign-type-delivery">
+                                <i class="fas fa-truck me-1"></i> {{ __('auth_page.delivery') }}
+                                <small class="d-block text-muted" id="slot-delivery">-</small>
+                            </label>
+                        </div>
+                        <div class="col-6">
+                            <input type="radio" class="btn-check" name="assignment_type" id="assign-type-packaging" value="packaging" autocomplete="off">
+                            <label class="btn btn-outline-secondary w-100 h-100 text-start py-2" for="assign-type-packaging">
+                                <i class="fas fa-box me-1"></i> {{ __('auth_page.packaging') }}
+                                <small class="d-block text-muted" id="slot-packaging">-</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
                     <div>
                         <span class="badge bg-success"><i class="fas fa-coins me-1"></i> +5 {{ __('Points') }}</span>
                         <small class="text-muted ms-1">{{ __('for volunteering') }}</small>
                     </div>
-                    <button type="button" class="btn btn-success" id="btn-confirm-assign">
-                        <i class="fas fa-hand-paper me-1"></i> {{ __('Assign Me') }}
+                    <button type="button" class="btn btn-success" id="btn-confirm-assign" disabled>
+                        <i class="fas fa-hand-paper me-1"></i> {{ __('Confirm assignment') }}
                     </button>
                 </div>
             </div>
@@ -243,6 +270,16 @@
         donationsAssign: '{{ route("volunteer.donations.assign", ":id") }}'
     };
     window.assignedDonationIds = @json($assignedDonationIds);
+    window.defaultAssignmentType = @json($defaultAssignmentType);
+    window.labels = {
+        delivery: @json(__('auth_page.delivery')),
+        packaging: @json(__('auth_page.packaging')),
+        slots: @json(__('slots filled')),
+        full: @json(__('Full')),
+        confirm: @json(__('Confirm assignment')),
+        assigned: @json(__('Assigned')),
+        noSlots: @json(__('No open slots for this type'))
+    };
 
     // City -> Town dynamic filter
     $('#filter_city_id').on('change', function () {
@@ -258,10 +295,32 @@
         });
     });
 
-    $(document).on('click', '.donation-card, .btn-assign-me', function(e) {
+    function showDonationModal(el) {
+        var node = el && el.nodeType ? el : document.getElementById('donationDetailModal');
+        if (node && typeof bootstrap !== 'undefined') {
+            bootstrap.Modal.getOrCreateInstance(node).show();
+        }
+    }
+
+    function hideDonationModal() {
+        var node = document.getElementById('donationDetailModal');
+        var instance = node && typeof bootstrap !== 'undefined' ? bootstrap.Modal.getInstance(node) : null;
+        if (instance) {
+            instance.hide();
+        }
+    }
+
+    $(document).on('click', '.btn-assign-me', function(e) {
+        e.preventDefault();
         e.stopPropagation();
-        let id = $(this).closest('[data-id]').data('id') || $(this).data('id');
-        openModal(id);
+        openModal($(this).data('id'));
+    });
+
+    $(document).on('click', '.donation-card', function(e) {
+        if ($(e.target).closest('.btn-assign-me').length) {
+            return;
+        }
+        openModal($(this).data('id'));
     });
 
     function openModal(id) {
@@ -294,14 +353,57 @@
             m.find('#modal-items-list').html(html);
             m.find('#modal-pickup-time').text(data.pickup_time ? new Date(data.pickup_time).toLocaleString() : '-');
             m.find('#modal-volunteers').html(data.volunteers_count + '/' + data.volunteers_needed + ' <i class="fas fa-users text-success"></i>');
-            m.find('#modal-volunteer-types').html('<i class="fas fa-truck"></i> ' + (data.delivery_volunteers_needed || 0) + ' · <i class="fas fa-box"></i> ' + (data.packaging_volunteers_needed || 0));
+            var delFilled = data.delivery_assignments_count || 0;
+            var delNeeded = data.delivery_volunteers_needed || 0;
+            var pkgFilled = data.packaging_assignments_count || 0;
+            var pkgNeeded = data.packaging_volunteers_needed || 0;
+            m.find('#modal-volunteer-types').html(
+                '<span class="badge bg-info me-1"><i class="fas fa-truck me-1"></i>' + delFilled + '/' + delNeeded + '</span>' +
+                '<span class="badge bg-secondary"><i class="fas fa-box me-1"></i>' + pkgFilled + '/' + pkgNeeded + '</span>'
+            );
             m.find('#modal-address').text(data.pickup_address || '-');
             m.find('#assign-donation-id').val(data.id);
 
-            if (window.assignedDonationIds.indexOf(data.id) !== -1) {
-                m.find('#btn-confirm-assign').prop('disabled', true).html('<i class="fas fa-check-circle me-1"></i> {{ __('Assigned') }}');
+            var slotText = function(filled, needed) {
+                return filled + '/' + needed + ' ' + window.labels.slots;
+            };
+            m.find('#slot-delivery').text(
+                delNeeded > 0 ? slotText(delFilled, delNeeded) : window.labels.noSlots
+            );
+            m.find('#slot-packaging').text(
+                pkgNeeded > 0 ? slotText(pkgFilled, pkgNeeded) : window.labels.noSlots
+            );
+
+            var $del = m.find('#assign-type-delivery');
+            var $pkg = m.find('#assign-type-packaging');
+            var $delLabel = m.find('label[for="assign-type-delivery"]');
+            var $pkgLabel = m.find('label[for="assign-type-packaging"]');
+
+            $del.prop('disabled', !data.can_assign_delivery);
+            $pkg.prop('disabled', !data.can_assign_packaging);
+            $delLabel.toggleClass('disabled', !data.can_assign_delivery);
+            $pkgLabel.toggleClass('disabled', !data.can_assign_packaging);
+
+            $('input[name="assignment_type"]').prop('checked', false);
+
+            var assignedIds = window.assignedDonationIds.map(function(id) { return Number(id); });
+            if (assignedIds.indexOf(Number(data.id)) !== -1) {
+                m.find('#assign-type-section').addClass('d-none');
+                m.find('#btn-confirm-assign').prop('disabled', true)
+                    .html('<i class="fas fa-check-circle me-1"></i> ' + window.labels.assigned);
             } else {
-                m.find('#btn-confirm-assign').prop('disabled', false).html('<i class="fas fa-hand-paper me-1"></i> {{ __("Assign Me") }}');
+                m.find('#assign-type-section').removeClass('d-none');
+                var defaultType = data.default_assignment_type || window.defaultAssignmentType || 'delivery';
+                if (data.can_assign_delivery && defaultType === 'delivery') {
+                    $del.prop('checked', true);
+                } else if (data.can_assign_packaging && defaultType === 'packaging') {
+                    $pkg.prop('checked', true);
+                } else if (data.can_assign_delivery) {
+                    $del.prop('checked', true);
+                } else if (data.can_assign_packaging) {
+                    $pkg.prop('checked', true);
+                }
+                updateAssignButton(m);
             }
 
             if (data.approved_charity_request_exists || data.charity_linked_assignments_exists) {
@@ -309,23 +411,45 @@
             } else {
                 m.find('#modal-charity-request-alert').addClass('d-none');
             }
-            m.modal('show');
+            showDonationModal(m[0]);
+        }).fail(function(xhr) {
+            showError(xhr.responseJSON?.message || '{{ __("Could not load donation details.") }}');
         });
     }
 
+    function updateAssignButton(modal) {
+        modal = modal || $('#donationDetailModal');
+        var selected = modal.find('input[name="assignment_type"]:checked').val();
+        var btn = modal.find('#btn-confirm-assign');
+        if (!selected) {
+            btn.prop('disabled', true).html('<i class="fas fa-hand-paper me-1"></i> ' + window.labels.confirm);
+            return;
+        }
+        btn.prop('disabled', false).html('<i class="fas fa-hand-paper me-1"></i> ' + window.labels.confirm);
+    }
+
+    $(document).on('change', 'input[name="assignment_type"]', function() {
+        updateAssignButton();
+    });
+
     $(document).on('click', '#btn-confirm-assign', function() {
         let id = $('#assign-donation-id').val();
+        let type = $('input[name="assignment_type"]:checked').val();
+        if (!type) {
+            showError(window.labels.noSlots);
+            return;
+        }
         let btn = $(this);
         btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>...');
 
-        $.post(window.routes.donationsAssign.replace(':id', id), function(res) {
+        $.post(window.routes.donationsAssign.replace(':id', id), { assignment_type: type }, function(res) {
             showSuccess(res.message || 'Assigned!');
-            $('#donationDetailModal').modal('hide');
+            hideDonationModal();
             setTimeout(function() { location.reload(); }, 1500);
         }).fail(function(xhr) {
             showError(xhr.responseJSON?.message || 'Failed');
         }).always(function() {
-            btn.prop('disabled', false).html('<i class="fas fa-hand-paper me-1"></i> Assign Me');
+            btn.prop('disabled', false).html('<i class="fas fa-hand-paper me-1"></i> ' + window.labels.confirm);
         });
     });
 </script>

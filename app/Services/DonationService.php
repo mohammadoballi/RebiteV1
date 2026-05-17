@@ -3,10 +3,10 @@
 namespace App\Services;
 
 use App\Models\Donation;
-use App\Models\DonationItem;
 use App\Models\Setting;
 use App\Models\User;
 use App\Repositories\DonationRepository;
+use App\Support\DonationItemAggregator;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
@@ -28,9 +28,7 @@ class DonationService
                                        + ($data['packaging_volunteers_needed'] ?? 0);
 
             if (!empty($items)) {
-                $data['food_type'] = collect($items)->pluck('food_type')->implode(', ');
-                $data['quantity'] = collect($items)->pluck('quantity')->first();
-                $data['quantity_unit'] = collect($items)->pluck('quantity_unit')->first();
+                $data = array_merge($data, DonationItemAggregator::aggregateForDonation($items));
             }
 
             $donation = $this->donationRepository->create($data);
@@ -39,13 +37,8 @@ class DonationService
                 $donation->items()->create($item);
             }
 
-            // Award donor 10 points per donation + 2 per item
-            if (isset($data['user_id'])) {
-                $donor = User::find($data['user_id']);
-                $perDonation = Setting::getInt('donor_points_per_donation', 10);
-                $perItem = Setting::getInt('donor_points_per_item', 2);
-                $donor?->addPoints($perDonation + (count($items) * $perItem));
-            }
+            $pointsAwarded = $this->awardDonorPoints($donation, count($items));
+            $donation->setAttribute('points_awarded', $pointsAwarded);
 
             return $donation->load('items');
         });
@@ -66,9 +59,9 @@ class DonationService
             $donation = $this->donationRepository->findOrFail($id);
 
             if ($items !== null) {
-                $data['food_type'] = collect($items)->pluck('food_type')->implode(', ');
-                $data['quantity'] = collect($items)->pluck('quantity')->first();
-                $data['quantity_unit'] = collect($items)->pluck('quantity_unit')->first();
+                if (!empty($items)) {
+                    $data = array_merge($data, DonationItemAggregator::aggregateForDonation($items));
+                }
 
                 $donation->items()->delete();
                 foreach ($items as $item) {
@@ -118,6 +111,7 @@ class DonationService
         $with = ['donor:id,name,city,city_id,town_id,avatar', 'items', 'cityRelation:id,name', 'town:id,name', 'foodCategory.parent:id,name'];
 
         if ($forVolunteerBrowse) {
+            $with[] = 'assignments:id,donation_id,assignment_type,status';
             $query = Donation::query()
                 ->with($with)
                 ->whereIn('status', [Donation::STATUS_PENDING, Donation::STATUS_ACCEPTED])
@@ -170,7 +164,13 @@ class DonationService
             $query->where('pickup_time', '<=', $filters['date_to'] . ' 23:59:59');
         }
 
-        if (!empty($filters['volunteer_type'])) {
+        if ($forVolunteerBrowse) {
+            if (! empty($filters['volunteer_type'])) {
+                $query->needsVolunteerType($filters['volunteer_type']);
+            } else {
+                $query->needsAnyVolunteerType();
+            }
+        } elseif (! empty($filters['volunteer_type'])) {
             $query->needsVolunteerType($filters['volunteer_type']);
         }
 
@@ -181,6 +181,24 @@ class DonationService
     {
         $donation = $this->donationRepository->findOrFail($id);
         $donation->increment('volunteers_count');
+    }
+
+    public function awardDonorPoints(Donation $donation, int $itemCount): int
+    {
+        $donor = User::find($donation->user_id);
+        if (!$donor) {
+            return 0;
+        }
+
+        $perDonation = Setting::getInt('donor_points_per_donation', 10);
+        $perItem = Setting::getInt('donor_points_per_item', 2);
+        $points = $perDonation + ($itemCount * $perItem);
+
+        if ($points > 0) {
+            $donor->addPoints($points);
+        }
+
+        return $points;
     }
 
     public function uploadImage(int $id, UploadedFile $file): string

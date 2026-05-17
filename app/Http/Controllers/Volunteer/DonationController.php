@@ -36,9 +36,14 @@ class DonationController extends Controller
             }
         }
 
-        $volunteerType = $user->role_type ?? 'delivery';
-        $filters['volunteer_type'] = $volunteerType;
+        if ($request->filled('assignment_type') && in_array($request->assignment_type, ['delivery', 'packaging'], true)) {
+            $filters['volunteer_type'] = $request->assignment_type;
+        }
+
         $donations = $this->donationService->getMarketplaceData($filters, forVolunteerBrowse: true);
+        $defaultAssignmentType = in_array($user->role_type, ['delivery', 'packaging'], true)
+            ? $user->role_type
+            : 'delivery';
 
         $cities = City::orderBy('name')->get();
         $towns = [];
@@ -54,7 +59,15 @@ class DonationController extends Controller
             ->pluck('donation_id')
             ->toArray();
 
-        return view('volunteer.donations.index', compact('donations', 'filters', 'cities', 'towns', 'assignedDonationIds', 'foodCategoryParents'));
+        return view('volunteer.donations.index', compact(
+            'donations',
+            'filters',
+            'cities',
+            'towns',
+            'assignedDonationIds',
+            'foodCategoryParents',
+            'defaultAssignmentType'
+        ));
     }
 
     public function show(int $id): JsonResponse
@@ -68,16 +81,53 @@ class DonationController extends Controller
         ])
             ->withExists('approvedCharityRequest')
             ->withExists('charityLinkedAssignments')
+            ->withCount([
+                'assignments as delivery_assignments_count' => fn ($q) => $q
+                    ->where('assignment_type', DonationAssignment::TYPE_DELIVERY)
+                    ->whereNotIn('status', [DonationAssignment::STATUS_CANCELLED]),
+                'assignments as packaging_assignments_count' => fn ($q) => $q
+                    ->where('assignment_type', DonationAssignment::TYPE_PACKAGING)
+                    ->whereNotIn('status', [DonationAssignment::STATUS_CANCELLED]),
+            ])
             ->findOrFail($id);
+
+        $user = auth()->user();
+        $defaultType = in_array($user->role_type, ['delivery', 'packaging'], true)
+            ? $user->role_type
+            : 'delivery';
+
+        $donation->setAttribute('default_assignment_type', $defaultType);
+        $donation->setAttribute('can_assign_delivery', $donation->hasOpenSlotForType(DonationAssignment::TYPE_DELIVERY));
+        $donation->setAttribute('can_assign_packaging', $donation->hasOpenSlotForType(DonationAssignment::TYPE_PACKAGING));
 
         return response()->json($donation);
     }
 
     public function selfAssign(Request $request, int $id): JsonResponse
     {
-        $donation = Donation::findOrFail($id);
+        $request->validate([
+            'assignment_type' => ['required', 'in:delivery,packaging'],
+        ]);
 
-        if ($donation->is_full) {
+        $donation = Donation::findOrFail($id);
+        $user = auth()->user();
+        $type = $request->input('assignment_type');
+
+        if ($donation->volunteersNeededForType($type) <= 0) {
+            return response()->json(
+                ['message' => __('This donation does not need :type volunteers.', ['type' => $type])],
+                422
+            );
+        }
+
+        if ($donation->isFullForType($type)) {
+            return response()->json(
+                ['message' => __('All :type volunteer slots for this donation are filled.', ['type' => $type])],
+                422
+            );
+        }
+
+        if ($donation->volunteers_count >= $donation->volunteers_needed) {
             return response()->json(
                 ['message' => __('This donation already has enough volunteers.')],
                 422
@@ -85,7 +135,7 @@ class DonationController extends Controller
         }
 
         $existing = DonationAssignment::where('donation_id', $id)
-            ->where('volunteer_id', auth()->id())
+            ->where('volunteer_id', $user->id)
             ->whereIn('status', ['pending', 'accepted', 'in_progress'])
             ->exists();
 
@@ -95,8 +145,6 @@ class DonationController extends Controller
                 422
             );
         }
-
-        $type = auth()->user()->role_type ?? 'delivery';
 
         $approvedRequest = DonationRequest::where('donation_id', $donation->id)
             ->where('status', DonationRequest::STATUS_APPROVED)
@@ -118,7 +166,8 @@ class DonationController extends Controller
         $this->notificationService->notifyDonorVolunteerAssigned($assignment);
 
         return response()->json([
-            'message' => __('You have been assigned to this donation successfully.'),
+            'message' => __('You have been assigned to this donation as :type.', ['type' => ucfirst($type)]),
+            'assignment_type' => $type,
         ], 201);
     }
 }

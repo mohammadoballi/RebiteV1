@@ -8,6 +8,7 @@
             </div>
             <div class="modal-body">
                 <input type="hidden" id="rate-volunteer-id">
+                <input type="hidden" id="rate-donation-id">
                 <div class="text-center mb-3">
                     <h6 id="rate-volunteer-name" class="fw-bold">-</h6>
                 </div>
@@ -39,90 +40,21 @@
 <style>
     #star-rating .fa-star { transition: color .15s; }
 </style>
+
+@push('scripts')
 <script>
-function updateStars(val) {
-    document.querySelectorAll('#star-rating .fa-star').forEach(function(star) {
-        var sv = parseInt(star.getAttribute('data-value'));
-        if (sv <= val) {
-            star.classList.remove('text-muted');
-            star.classList.add('text-warning');
-        } else {
-            star.classList.remove('text-warning');
-            star.classList.add('text-muted');
-        }
-    });
-}
-
-document.addEventListener('mouseover', function(e) {
-    var star = e.target.closest('#star-rating .fa-star');
-    if (star) {
-        updateStars(parseInt(star.getAttribute('data-value')));
-    }
-});
-
-document.addEventListener('mouseout', function(e) {
-    var star = e.target.closest('#star-rating .fa-star');
-    if (star) {
-        var container = document.getElementById('star-rating');
-        var related = e.relatedTarget;
-        if (container && !container.contains(related)) {
-            var selected = parseInt(document.getElementById('rate-value').value) || 0;
-            updateStars(selected);
-        }
-    }
-});
-
-document.addEventListener('click', function(e) {
-    var star = e.target.closest('#star-rating .fa-star');
-    if (star) {
-        var val = parseInt(star.getAttribute('data-value'));
-        document.getElementById('rate-value').value = val;
-        updateStars(val);
-    }
-});
-
-$(function() {
-    // Submit rating
-    $(document).on('click', '#btn-submit-rating', function() {
-        let rating = parseInt($('#rate-value').val());
-        if (rating < 1) {
-            showError('Please select a rating');
-            return;
-        }
-        let btn = $(this);
-        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>...');
-
-        $.ajax({
-            url: '{{ route("ratings.store") }}',
-            type: 'POST',
-            data: {
-                rateable_id: $('#rate-volunteer-id').val(),
-                rateable_type: 'user',
-                rating: rating,
-                comment: $('#rate-comment').val()
-            },
-            success: function(res) {
-                showSuccess(res.message || 'Rating submitted!');
-                $('#rateVolunteerModal').modal('hide');
-            },
-            error: function(xhr) {
-                showError(xhr.responseJSON?.message || 'Failed to submit rating');
-            },
-            complete: function() {
-                btn.prop('disabled', false).html('<i class="fas fa-paper-plane me-1"></i> Submit Rating');
-            }
-        });
-    });
-});
-
-function openRateModal(volunteerId, volunteerName, role) {
-    document.getElementById('rate-volunteer-id').value = volunteerId;
-    document.getElementById('rate-volunteer-name').textContent = volunteerName;
-    document.getElementById('rate-value').value = 0;
-    document.getElementById('rate-comment').value = '';
-    updateStars(0);
-    var title = role === 'donor' ? '{{ __("Rate Donor") }}' : '{{ __("Rate Volunteer") }}';
-    document.getElementById('rate-modal-title').innerHTML = '<i class="fas fa-star me-2"></i>' + title;
-    $('#rateVolunteerModal').modal('show');
-}
+    window.rateModalConfig = {
+        storeUrl: @json(route('ratings.store'))
+    };
+    window.rateModalLabels = {
+        submit: @json(__('Submit Rating')),
+        error: @json(__('Error')),
+        selectRating: @json(__('Please select a rating')),
+        missingDonation: @json(__('Missing donation context. Close and reopen the donation details, then try again.')),
+        failed: @json(__('Failed to submit rating')),
+        rateDonor: @json(__('Rate Donor')),
+        rateVolunteer: @json(__('Rate Volunteer'))
+    };
 </script>
+<script src="{{ asset('js/rate-volunteer-modal.js') }}"></script>
+@endpush

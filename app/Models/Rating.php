@@ -11,6 +11,7 @@ class Rating extends Model
 
     protected $fillable = [
         'rater_id',
+        'donation_id',
         'rateable_id',
         'rateable_type',
         'rating',

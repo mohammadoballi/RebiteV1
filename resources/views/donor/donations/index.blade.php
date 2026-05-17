@@ -21,6 +21,7 @@
     <div class="card-body">
         <x-datatable id="donations-table" :columns="[
             '#',
+            __('Food category'),
             __('Food Items'),
             __('Volunteers'),
             __('donations.status'),
@@ -43,7 +44,26 @@
             </div>
             <form id="donationForm">
                 <div class="modal-body">
-                    {{-- Food Items Section --}}
+                    {{-- Food Category (first) --}}
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <label for="food_category_id" class="form-label">{{ __('Food category') }} <span class="text-danger">*</span></label>
+                            <select class="form-select" id="food_category_id" name="food_category_id" required>
+                                <option value="">{{ __('Select food category') }}</option>
+                                @foreach($foodCategoryParents ?? [] as $p)
+                                    <optgroup label="{{ $p->name }}">
+                                        @foreach($p->children as $c)
+                                            <option value="{{ $c->id }}">{{ $c->name }}</option>
+                                        @endforeach
+                                    </optgroup>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    {{-- Food Items / Food Type (after category) --}}
                     <div class="mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h6 class="fw-bold mb-0"><i class="fas fa-utensils me-1 text-success"></i> {{ __('Food Items') }}</h6>
@@ -58,43 +78,8 @@
 
                     <hr>
 
-                    <div class="row g-3 mb-2">
-                        <div class="col-12">
-                            <label for="food_category_id" class="form-label">{{ __('Food category') }} <span class="text-danger">*</span></label>
-                            <select class="form-select" id="food_category_id" name="food_category_id" required>
-                                <option value="">{{ __('Select food type') }}</option>
-                                @foreach($foodCategoryParents ?? [] as $p)
-                                    <optgroup label="{{ $p->name }}">
-                                        @foreach($p->children as $c)
-                                            <option value="{{ $c->id }}">{{ $c->name }}</option>
-                                        @endforeach
-                                    </optgroup>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-
-                    <hr>
-
                     {{-- Donation Details --}}
                     <div class="row g-3">
-                        <div class="col-md-6">
-                            <label for="donation_city_id" class="form-label">{{ __('City') }} <span class="text-danger">*</span></label>
-                            <select class="form-select" id="donation_city_id" name="city_id" required>
-                                <option value="">{{ __('Select City') }}</option>
-                                @foreach($cities as $city)
-                                    <option value="{{ $city->id }}">{{ $city->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        <div class="col-md-6">
-                            <label for="donation_town_id" class="form-label">{{ __('Town') }} <span class="text-danger">*</span></label>
-                            <select class="form-select" id="donation_town_id" name="town_id" required>
-                                <option value="">{{ __('Select Town') }}</option>
-                            </select>
-                        </div>
-
                         <div class="col-md-8">
                             <label for="pickup_address" class="form-label">{{ __('donations.pickup_address') }} <span class="text-danger">*</span></label>
                             <textarea class="form-control" id="pickup_address" name="pickup_address" rows="2" required></textarea>
@@ -154,6 +139,10 @@
             <div class="modal-body">
                 <div class="row g-3">
                     <div class="col-12">
+                        <small class="text-muted d-block">{{ __('Food category') }}</small>
+                        <span id="view-food-category" class="fw-semibold">-</span>
+                    </div>
+                    <div class="col-12">
                         <h6 class="fw-bold"><i class="fas fa-utensils me-1 text-success"></i> {{ __('Food Items') }}</h6>
                         <div id="view-items-list"></div>
                     </div>
@@ -180,14 +169,6 @@
                             <small class="text-muted d-block">{{ __('donations.pickup_time') }}</small>
                             <span id="view-pickup-time">-</span>
                         </div>
-                    </div>
-                    <div class="col-12">
-                        <small class="text-muted d-block">{{ __('City') }} / {{ __('Town') }}</small>
-                        <span id="view-city-town">-</span>
-                    </div>
-                    <div class="col-12">
-                        <small class="text-muted d-block">{{ __('Food category') }}</small>
-                        <span id="view-food-category">-</span>
                     </div>
                     <div class="col-12">
                         <small class="text-muted d-block">{{ __('donations.pickup_address') }}</small>

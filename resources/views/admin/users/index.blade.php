@@ -26,6 +26,7 @@
                         <th>{{ __('users.name') }}</th>
                         <th>{{ __('users.email') }}</th>
                         <th>{{ __('users.role') }}</th>
+                        <th>{{ __('auth_page.volunteer_type') }}</th>
                         <th>{{ __('City') }}</th>
                         <th>{{ __('Subscription') }}</th>
                         <th>{{ __('users.status') }}</th>
@@ -73,6 +74,12 @@
                         <div class="p-2 rounded bg-light">
                             <small class="text-muted d-block">{{ __('users.role') }}</small>
                             <strong id="user-role">-</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6" id="volunteer-task-row" style="display:none">
+                        <div class="p-2 rounded bg-light">
+                            <small class="text-muted d-block">{{ __('auth_page.volunteer_type') }}</small>
+                            <span id="user-volunteer-task">-</span>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -196,6 +203,13 @@
                         <div class="col-12">
                             <label class="form-label">{{ __('Address') }}</label>
                             <textarea class="form-control" name="address" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-6" id="edit-volunteer-task-field" style="display:none">
+                            <label class="form-label">{{ __('auth_page.volunteer_type') }}</label>
+                            <select class="form-select" name="role_type">
+                                <option value="delivery">{{ __('auth_page.delivery') }}</option>
+                                <option value="packaging">{{ __('auth_page.packaging') }}</option>
+                            </select>
                         </div>
                         <div class="col-12" id="rejection-reason-field" style="display:none">
                             <label class="form-label">{{ __('users.rejection_reason') }} <span class="text-danger">*</span></label>

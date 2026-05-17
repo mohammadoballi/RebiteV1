@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Donor;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Donation\StoreDonationRequest;
 use App\Http\Requests\Donation\UpdateDonationRequest;
-use App\Models\City;
 use App\Models\Donation;
 use App\Models\FoodCategory;
 use App\Services\DonationService;
@@ -22,10 +21,9 @@ class DonationController extends Controller
 
     public function index()
     {
-        $cities = City::orderBy('name')->get();
         $foodCategoryParents = FoodCategory::roots()->with('children')->get();
 
-        return view('donor.donations.index', compact('cities', 'foodCategoryParents'));
+        return view('donor.donations.index', compact('foodCategoryParents'));
     }
 
     public function datatable(): JsonResponse
@@ -33,9 +31,23 @@ class DonationController extends Controller
         $query = $this->donationService->getDatatableData(auth()->id());
 
         return DataTables::eloquent($query)
+            ->addColumn('food_category_label', function (Donation $d) {
+                $d->loadMissing('foodCategory.parent');
+                if (!$d->foodCategory) {
+                    return '—';
+                }
+                $parent = $d->foodCategory->parent;
+
+                return ($parent ? $parent->name.' — ' : '').$d->foodCategory->name;
+            })
             ->addColumn('items_summary', function (Donation $d) {
                 $d->loadMissing('items');
                 return $d->items_summary;
+            })
+            ->addColumn('quantities_summary', function (Donation $d) {
+                $d->loadMissing('items');
+
+                return $d->quantities_summary ?: '—';
             })
             ->addColumn('volunteer_info', function (Donation $d) {
                 $color = $d->volunteers_count >= $d->volunteers_needed ? 'success' : 'warning';
@@ -58,16 +70,23 @@ class DonationController extends Controller
 
     public function store(StoreDonationRequest $request): JsonResponse
     {
+        $donor = auth()->user();
         $data = $request->validated();
-        $data['user_id'] = auth()->id();
+        $data['user_id'] = $donor->id;
+        $data['city_id'] = $donor->city_id;
+        $data['town_id'] = $donor->town_id;
 
         $donation = $this->donationService->create($data);
 
         $this->notificationService->notifyAdminsNewDonation($donation);
 
+        $donor->refresh();
+
         return response()->json([
-            'message'  => __('Donation created successfully.'),
-            'donation' => $donation,
+            'message'        => __('Donation created successfully.'),
+            'donation'       => $donation,
+            'points_awarded' => $donation->points_awarded ?? 0,
+            'donor_points'   => $donor->points,
         ], 201);
     }
 

@@ -32,6 +32,15 @@ class UserController extends Controller
 
         return DataTables::eloquent($query)
             ->addColumn('role', fn (User $user) => $user->roles->pluck('display_name')->implode(', '))
+            ->addColumn('volunteer_task', function (User $user) {
+                if (!$user->roles->contains('name', 'volunteer')) {
+                    return '—';
+                }
+
+                return $user->role_type === 'packaging'
+                    ? '<span class="badge bg-secondary"><i class="fas fa-box me-1"></i>' . __('auth_page.packaging') . '</span>'
+                    : '<span class="badge bg-info"><i class="fas fa-truck me-1"></i>' . __('auth_page.delivery') . '</span>';
+            })
             ->addColumn('city_name', function (User $user) {
                 $parts = [];
                 if ($user->cityRelation) $parts[] = $user->cityRelation->name;
@@ -60,7 +69,7 @@ class UserController extends Controller
                 $btns .= '<button class="btn btn-sm btn-outline-danger btn-delete-user" data-id="'.$user->id.'" title="Delete"><i class="fas fa-trash"></i></button>';
                 return $btns;
             })
-            ->rawColumns(['status_badge', 'subscription_badge', 'actions'])
+            ->rawColumns(['status_badge', 'subscription_badge', 'volunteer_task', 'actions'])
             ->toJson();
     }
 
@@ -82,14 +91,21 @@ class UserController extends Controller
             'address'           => ['nullable', 'string', 'max:500'],
             'organization_name' => ['nullable', 'string', 'max:255'],
             'rejection_reason'  => ['nullable', 'required_if:status,rejected', 'string', 'max:500'],
+            'role_type'         => ['nullable', 'in:delivery,packaging'],
         ]);
 
         $user = User::findOrFail($id);
 
-        $user->update($request->only([
+        $fields = [
             'name', 'email', 'phone', 'status', 'city',
             'address', 'organization_name', 'rejection_reason',
-        ]));
+        ];
+
+        if ($user->hasRole('volunteer') && $request->filled('role_type')) {
+            $fields[] = 'role_type';
+        }
+
+        $user->update($request->only($fields));
 
         return response()->json(['message' => __('User updated successfully.')]);
     }

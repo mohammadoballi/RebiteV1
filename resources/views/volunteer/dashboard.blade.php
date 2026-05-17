@@ -32,7 +32,16 @@
             </div>
             <div class="col">
                 <h3 class="mb-1">{{ __('general.welcome') }}, {{ $user->name }}!</h3>
-                <p class="mb-0 opacity-75">{{ __('dashboard.volunteer_dashboard') }} &mdash; {{ now()->translatedFormat('l, d F Y') }}</p>
+                <p class="mb-1 opacity-75">{{ __('dashboard.volunteer_dashboard') }} &mdash; {{ now()->translatedFormat('l, d F Y') }}</p>
+                @if($user->role_type)
+                    <span class="badge {{ $user->role_type === 'packaging' ? 'bg-secondary' : 'bg-info' }}">
+                        <i class="fas {{ $user->role_type === 'packaging' ? 'fa-box' : 'fa-truck' }} me-1"></i>
+                        {{ $user->role_type === 'packaging' ? __('auth_page.packaging') : __('auth_page.delivery') }}
+                    </span>
+                    <small class="d-block opacity-75 mt-1">{{ __('Default when assigning — you can still choose Delivery or Packaging per donation') }}</small>
+                @else
+                    <a href="{{ route('profile.show') }}" class="badge bg-warning text-dark">{{ __('Set your volunteer task in profile') }}</a>
+                @endif
             </div>
         </div>
     </div>

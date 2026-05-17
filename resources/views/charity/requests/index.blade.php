@@ -13,7 +13,7 @@
             '#',
             __('donations.food_type'),
             __('donations.quantity'),
-            __('donations.status'),
+            __('Status'),
             __('Created At'),
             __('general.actions')
         ]" />

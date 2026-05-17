@@ -55,23 +55,10 @@ function updateRemoveButtons() {
 }
 
 $(document).ready(function() {
-    // City -> Town dynamic loading for donation form
-    $('#donation_city_id').on('change', function () {
-        var cityId = $(this).val();
-        var $town = $('#donation_town_id');
-        $town.html('<option value="">Select Town</option>');
-        if (!cityId) return;
-
-        $.get('/api/cities/' + cityId + '/towns', function (towns) {
-            towns.forEach(function (t) {
-                $town.append('<option value="' + t.id + '">' + t.name + '</option>');
-            });
-        });
-    });
-
     // DataTable
     let donationsTable = initDataTable('donations-table', window.routes.donationsDatatable, [
         { data: 'id', name: 'id' },
+        { data: 'food_category_label', name: 'food_category_id', orderable: false },
         { data: 'items_summary', name: 'food_type', orderable: false },
         { data: 'volunteer_info', name: 'volunteers_needed', orderable: false },
         { data: 'status', name: 'status' },
@@ -79,6 +66,10 @@ $(document).ready(function() {
         { data: 'created_at', name: 'created_at' },
         { data: 'actions', name: 'actions', orderable: false, searchable: false }
     ]);
+
+    if (window.location.hash === '#add') {
+        $('#btn-add-donation').trigger('click');
+    }
 
     // Add item row
     $(document).on('click', '#btn-add-item', function() { addItemRow(); });
@@ -130,19 +121,6 @@ $(document).ready(function() {
             $('#donationForm [name="notes"]').val(data.notes);
             $('#food_category_id').val(data.food_category_id || '');
 
-            // Populate city and town
-            if (data.city_id) {
-                $('#donation_city_id').val(data.city_id);
-                $.get('/api/cities/' + data.city_id + '/towns', function (towns) {
-                    var $town = $('#donation_town_id');
-                    $town.html('<option value="">Select Town</option>');
-                    towns.forEach(function (t) {
-                        var sel = (data.town_id && data.town_id == t.id) ? 'selected' : '';
-                        $town.append('<option value="' + t.id + '" ' + sel + '>' + t.name + '</option>');
-                    });
-                });
-            }
-
             $('#donationModal').modal('show');
         });
     });
@@ -172,7 +150,14 @@ $(document).ready(function() {
             processData: false,
             contentType: false,
             success: function(response) {
-                showSuccess(response.message || 'Saved successfully');
+                var msg = response.message || 'Saved successfully';
+                if (action !== 'edit' && response.points_awarded > 0) {
+                    msg += ' (+' + response.points_awarded + ' ' + (window.pointsLabel || 'points') + ')';
+                    if (response.donor_points !== undefined) {
+                        $('#donor-points-balance').text(response.donor_points);
+                    }
+                }
+                showSuccess(msg);
                 $('#donationModal').modal('hide');
                 donationsTable.ajax.reload();
             },
@@ -221,10 +206,6 @@ $(document).ready(function() {
             modal.find('#view-delivery-volunteers').html((data.delivery_volunteers_needed || 0) + ' <i class="fas fa-truck text-success"></i>');
             modal.find('#view-packaging-volunteers').html((data.packaging_volunteers_needed || 0) + ' <i class="fas fa-box text-info"></i>');
             modal.find('#view-pickup-time').text(data.pickup_time ? new Date(data.pickup_time).toLocaleString() : '-');
-            var loc = '';
-            if (data.city_relation) loc = data.city_relation.name;
-            if (data.town) loc += (loc ? ' / ' : '') + data.town.name;
-            modal.find('#view-city-town').text(loc || '-');
             var fc = '';
             if (data.food_category) {
                 fc = (data.food_category.parent ? data.food_category.parent.name + ' — ' : '') + data.food_category.name;

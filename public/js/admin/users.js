@@ -14,6 +14,7 @@ $(document).ready(function() {
         { data: 'name', name: 'name' },
         { data: 'email', name: 'email' },
         { data: 'role', name: 'role', orderable: false, searchable: false },
+        { data: 'volunteer_task', name: 'role_type', orderable: false, searchable: false },
         { data: 'city_name', name: 'city_name', orderable: false, searchable: false },
         { data: 'subscription_badge', name: 'subscription_badge', orderable: false, searchable: false },
         { data: 'status_badge', name: 'status', orderable: true, searchable: false },
@@ -37,6 +38,15 @@ $(document).ready(function() {
             modal.find('#user-email').text(data.email);
             modal.find('#user-phone').text(data.phone || '-');
             modal.find('#user-role').text(data.roles && data.roles.length ? data.roles.map(r => r.display_name).join(', ') : '-');
+            var isVolunteer = data.roles && data.roles.some(function(r) { return r.name === 'volunteer'; });
+            if (isVolunteer) {
+                var taskLabel = data.role_type === 'packaging' ? 'Packaging' : 'Delivery';
+                var taskBadge = data.role_type === 'packaging' ? 'bg-secondary' : 'bg-info';
+                modal.find('#user-volunteer-task').html('<span class="badge ' + taskBadge + '">' + taskLabel + '</span>');
+                modal.find('#volunteer-task-row').show();
+            } else {
+                modal.find('#volunteer-task-row').hide();
+            }
             modal.find('#user-status').html(getStatusBadge(data.status));
             modal.find('#user-address').text(data.address || '-');
 
@@ -129,6 +139,13 @@ $(document).ready(function() {
             form.find('[name="address"]').val(data.address || '');
             form.find('[name="organization_name"]').val(data.organization_name || '');
             form.find('[name="rejection_reason"]').val(data.rejection_reason || '');
+            var isVolunteerEdit = data.roles && data.roles.some(function(r) { return r.name === 'volunteer'; });
+            if (isVolunteerEdit) {
+                form.find('[name="role_type"]').val(data.role_type || 'delivery');
+                $('#edit-volunteer-task-field').show();
+            } else {
+                $('#edit-volunteer-task-field').hide();
+            }
             toggleRejectionField(data.status);
             $('#editUserModal').modal('show');
         });

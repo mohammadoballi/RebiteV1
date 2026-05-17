@@ -15,8 +15,6 @@ class StoreDonationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'city_id' => ['required', 'exists:cities,id'],
-            'town_id' => ['required', 'exists:towns,id'],
             'pickup_address' => ['required', 'string'],
             'food_category_id' => ['required', 'exists:food_categories,id'],
             'latitude' => ['nullable', 'numeric'],
@@ -37,6 +35,11 @@ class StoreDonationRequest extends FormRequest
     public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
+            $user = $this->user();
+            if (!$user->city_id || !$user->town_id) {
+                $validator->errors()->add('profile', __('Please set your city and town in your profile before creating a donation.'));
+            }
+
             $id = $this->input('food_category_id');
             if (!$id) {
                 return;

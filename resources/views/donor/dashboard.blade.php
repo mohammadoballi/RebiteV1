@@ -71,7 +71,7 @@
                     <i class="fas fa-coins fa-lg text-info"></i>
                 </div>
                 <div>
-                    <h3 class="mb-0">{{ auth()->user()->points ?? 0 }}</h3>
+                    <h3 class="mb-0" id="donor-points-balance">{{ auth()->user()->fresh()->points ?? 0 }}</h3>
                     <small class="text-muted">{{ __('Points') }} · <span class="badge bg-{{ auth()->user()->getPointsLevelColor() }}">{{ auth()->user()->getPointsLevel() }}</span></small>
                 </div>
             </div>
@@ -94,6 +94,7 @@
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
+                                <th>{{ __('Food category') }}</th>
                                 <th>{{ __('donations.food_type') }}</th>
                                 <th>{{ __('donations.quantity') }}</th>
                                 <th>{{ __('donations.status') }}</th>
@@ -103,6 +104,13 @@
                         <tbody>
                             @forelse($recentDonations ?? [] as $donation)
                                 <tr>
+                                    <td>
+                                        @if($donation->foodCategory)
+                                            {{ $donation->foodCategory->parent ? $donation->foodCategory->parent->name . ' — ' : '' }}{{ $donation->foodCategory->name }}
+                                        @else
+                                            —
+                                        @endif
+                                    </td>
                                     <td>{{ $donation->food_type }}</td>
                                     <td>{{ $donation->quantity }} {{ __('donations.' . ($donation->quantity_unit ?? 'kg')) }}</td>
                                     <td><x-status-badge :status="$donation->status" /></td>
@@ -110,7 +118,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted py-4">
+                                    <td colspan="5" class="text-center text-muted py-4">
                                         <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
                                         {{ __('general.no_data') }}
                                     </td>

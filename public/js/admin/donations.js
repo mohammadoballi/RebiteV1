@@ -12,8 +12,8 @@ $(document).ready(function() {
     let donationsTable = initDataTable('donations-table', donationsUrl, [
         { data: 'id', name: 'id' },
         { data: 'donor_name', name: 'donor.name' },
-        { data: 'food_type', name: 'food_type' },
-        { data: 'quantity', name: 'quantity' },
+        { data: 'items_summary', name: 'food_type', orderable: false },
+        { data: 'quantities_summary', name: 'quantity', orderable: false },
         { data: 'status', name: 'status' },
         { data: 'pickup_time', name: 'pickup_time' },
         { data: 'created_at', name: 'created_at' },
@@ -30,8 +30,23 @@ $(document).ready(function() {
         let donationId = $(this).data('id');
         $.get(window.routes.donationsShow.replace(':id', donationId), function(data) {
             let modal = $('#viewDonationModal');
-            modal.find('#donation-food-type').text(data.food_type);
-            modal.find('#donation-quantity').text(data.quantity + ' ' + (data.quantity_unit || ''));
+            var itemsHtml = '';
+            if (data.items && data.items.length > 0) {
+                itemsHtml = '<ul class="mb-0 ps-3">';
+                data.items.forEach(function(item) {
+                    itemsHtml += '<li>' + item.food_type + ' — <strong>' + item.quantity + ' ' + item.quantity_unit + '</strong>';
+                    if (item.description) {
+                        itemsHtml += ' <small class="text-muted">(' + item.description + ')</small>';
+                    }
+                    itemsHtml += '</li>';
+                });
+                itemsHtml += '</ul>';
+            } else {
+                itemsHtml = '<span class="text-muted">—</span>';
+            }
+            modal.find('#donation-items-list').html(itemsHtml);
+            modal.find('#donation-food-type').text(data.items_summary || data.food_type || '—');
+            modal.find('#donation-quantity').text(data.quantities_summary || (data.quantity + (data.quantity_unit && data.quantity_unit !== 'mixed' ? ' ' + data.quantity_unit : '')) || '—');
             modal.find('#donation-status-badge').html(getStatusBadge(data.status));
             var loc = '';
             if (data.city_relation) loc = data.city_relation.name;
@@ -62,7 +77,30 @@ $(document).ready(function() {
             statusSelect.val(data.status);
             modal.find('#update-donation-id').val(data.id);
 
+            let isPublished = !!data.admin_approved_at && !data.accepted_charity_id;
+            modal.find('#btn-approve-donation').toggleClass('d-none', isPublished);
+            modal.find('#donation-approved-badge').toggleClass('d-none', !isPublished);
+
             modal.modal('show');
+        });
+    });
+
+    $(document).on('click', '#btn-approve-donation', function() {
+        let donationId = $('#update-donation-id').val();
+        let btn = $(this);
+        btn.prop('disabled', true);
+
+        $.post(window.routes.donationsApprove.replace(':id', donationId), function(response) {
+            showSuccess(response.message || 'Donation approved');
+            $('#btn-approve-donation').addClass('d-none');
+            $('#donation-approved-badge').removeClass('d-none');
+            $('#donation-status-select').val('pending');
+            $('#donation-status-badge').html(getStatusBadge('pending'));
+            donationsTable.ajax.reload();
+        }).fail(function(xhr) {
+            showError(xhr.responseJSON?.message || 'Failed to approve donation');
+        }).always(function() {
+            btn.prop('disabled', false);
         });
     });
 

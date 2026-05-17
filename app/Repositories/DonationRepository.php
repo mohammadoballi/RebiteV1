@@ -36,7 +36,7 @@ class DonationRepository extends BaseRepository
 
     public function getDatatableQuery(?int $donorId = null)
     {
-        $query = $this->query()->with(['donor:id,name', 'items']);
+        $query = $this->query()->with(['donor:id,name', 'items', 'foodCategory.parent']);
 
         if ($donorId) {
             $query->where('user_id', $donorId);

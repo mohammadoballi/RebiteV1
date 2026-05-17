@@ -15,8 +15,6 @@ class UpdateDonationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'city_id' => ['nullable', 'exists:cities,id'],
-            'town_id' => ['nullable', 'exists:towns,id'],
             'pickup_address' => ['nullable', 'string'],
             'food_category_id' => ['nullable', 'exists:food_categories,id'],
             'latitude'          => ['nullable', 'numeric'],

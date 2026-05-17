@@ -72,7 +72,10 @@ class DonationRequestService
                 ]);
             }
 
-            $donation->update(['status' => Donation::STATUS_ACCEPTED]);
+            $donation->update([
+                'status' => Donation::STATUS_ACCEPTED,
+                'accepted_charity_id' => $charityId,
+            ]);
 
             return $req;
         });

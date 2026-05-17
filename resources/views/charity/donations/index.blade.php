@@ -137,7 +137,11 @@
 
             <div class="card-footer bg-transparent border-top-0 pt-0">
                 @if(auth()->user()->hasActiveSubscription())
-                    @if(in_array($donation->id, $requestedDonationIds))
+                    @if($donation->accepted_charity_id && $donation->accepted_charity_id !== auth()->id())
+                    <button class="btn btn-secondary btn-sm w-100" disabled>
+                        <i class="fas fa-lock me-1"></i> {{ __('Already accepted') }}
+                    </button>
+                    @elseif(in_array($donation->id, $requestedDonationIds))
                     <button class="btn btn-secondary btn-sm w-100" disabled>
                         <i class="fas fa-check-circle me-1"></i> {{ __('Accepted / In progress') }}
                     </button>
@@ -344,8 +348,11 @@
             modal.find('#request-donation-id').val(data.id);
             modal.find('#request-message').val('');
 
-            if (window.requestedDonationIds.indexOf(data.id) !== -1) {
-                modal.find('#btn-submit-request').prop('disabled', true).html('<i class="fas fa-check-circle me-1"></i> {{ __('Accepted / In progress') }}');
+            if (!data.can_accept) {
+                var acceptedLabel = data.is_claimed_by_me
+                    ? '{{ __('Accepted / In progress') }}'
+                    : '{{ __('Already accepted by another charity') }}';
+                modal.find('#btn-submit-request').prop('disabled', true).html('<i class="fas fa-check-circle me-1"></i> ' + acceptedLabel);
                 modal.find('#request-message').prop('disabled', true);
             } else {
                 modal.find('#btn-submit-request').prop('disabled', false).html('<i class="fas fa-hand-holding-heart me-1"></i> {{ __("Accept donation") }}');
