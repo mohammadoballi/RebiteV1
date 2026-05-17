@@ -124,6 +124,7 @@ Route::middleware(['auth', 'approved'])->group(function () {
         Route::prefix('donations')->name('donations.')->group(function () {
             Route::get('/', [AdminDonationController::class, 'index'])->name('index');
             Route::get('datatable', [AdminDonationController::class, 'datatable'])->name('datatable');
+            Route::post('{id}/approve', [AdminDonationController::class, 'approve'])->name('approve');
             Route::get('{id}', [AdminDonationController::class, 'show'])->name('show');
             Route::put('{id}/status', [AdminDonationController::class, 'updateStatus'])->name('update-status');
             Route::delete('{id}', [AdminDonationController::class, 'destroy'])->name('destroy');
