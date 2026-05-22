@@ -5,14 +5,11 @@
 @php
     $map = [
         'pending'    => 'warning',
+        'in_progress'=> 'info',
         'approved'   => 'success',
         'completed'  => 'success',
         'rejected'   => 'danger',
         'cancelled'  => 'danger',
-        'accepted'   => 'info',
-        'assigned'   => 'primary',
-        'in_transit' => 'secondary',
-        'delivered'  => 'success',
     ];
 
     $color = $map[strtolower($status)] ?? 'secondary';

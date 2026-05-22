@@ -143,7 +143,7 @@
                     </button>
                     @elseif(in_array($donation->id, $requestedDonationIds))
                     <button class="btn btn-secondary btn-sm w-100" disabled>
-                        <i class="fas fa-check-circle me-1"></i> {{ __('Accepted / In progress') }}
+                        <i class="fas fa-check-circle me-1"></i> {{ __('In progress') }}
                     </button>
                     @else
                     <button class="btn btn-success btn-sm w-100 btn-request-donation" data-id="{{ $donation->id }}">
@@ -361,7 +361,7 @@
 
             if (!data.can_accept) {
                 var acceptedLabel = data.is_claimed_by_me
-                    ? '{{ __('Accepted / In progress') }}'
+                    ? '{{ __('In progress') }}'
                     : '{{ __('Already accepted by another charity') }}';
                 modal.find('#btn-submit-request').prop('disabled', true).html('<i class="fas fa-check-circle me-1"></i> ' + acceptedLabel);
                 modal.find('#request-message').prop('disabled', true);

@@ -15,6 +15,7 @@ return [
     'status' => 'الحالة',
     'donor' => 'المتبرع',
     'pending' => 'قيد الانتظار',
+    'in_progress' => 'قيد التنفيذ',
     'accepted' => 'مقبول',
     'assigned' => 'معين',
     'in_transit' => 'قيد التوصيل',

@@ -15,6 +15,7 @@ return [
     'status' => 'Status',
     'donor' => 'Donor',
     'pending' => 'Pending',
+    'in_progress' => 'In Progress',
     'accepted' => 'Accepted',
     'assigned' => 'Assigned',
     'in_transit' => 'In Transit',

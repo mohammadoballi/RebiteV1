@@ -147,7 +147,7 @@ class DonationController extends Controller
         }
 
         $approvedRequest = DonationRequest::where('donation_id', $donation->id)
-            ->where('status', DonationRequest::STATUS_APPROVED)
+            ->when($donation->accepted_charity_id, fn ($q) => $q->where('charity_id', $donation->accepted_charity_id))
             ->first();
 
         $assignment = DonationAssignment::create([

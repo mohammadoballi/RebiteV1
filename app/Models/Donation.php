@@ -12,12 +12,8 @@ class Donation extends Model
     use HasFactory, SoftDeletes;
 
     const STATUS_PENDING = 'pending';
-    const STATUS_ACCEPTED = 'accepted';
-    const STATUS_ASSIGNED = 'assigned';
-    const STATUS_IN_TRANSIT = 'in_transit';
-    const STATUS_DELIVERED = 'delivered';
+    const STATUS_IN_PROGRESS = 'in_progress';
     const STATUS_COMPLETED = 'completed';
-    const STATUS_CANCELLED = 'cancelled';
 
     protected $fillable = [
         'user_id',
@@ -95,7 +91,7 @@ class Donation extends Model
 
     public function approvedCharityRequest()
     {
-        return $this->hasOne(DonationRequest::class)->where('status', DonationRequest::STATUS_APPROVED);
+        return $this->hasOne(DonationRequest::class)->whereColumn('charity_id', 'donations.accepted_charity_id');
     }
 
     public function charityLinkedAssignments()
@@ -212,7 +208,6 @@ class Donation extends Model
     {
         return $query->where('status', self::STATUS_PENDING)
             ->whereNull('accepted_charity_id')
-            ->whereDoesntHave('requests', fn ($q) => $q->where('status', DonationRequest::STATUS_APPROVED))
             ->where(function ($q) {
                 $q->whereNull('expiry_time')
                     ->orWhere('expiry_time', '>', now());
@@ -226,28 +221,29 @@ class Donation extends Model
      */
     public function scopeForVolunteerMarketplace($query)
     {
-        $approved = DonationRequest::STATUS_APPROVED;
         $cancelled = DonationAssignment::STATUS_CANCELLED;
         $delivery = DonationAssignment::TYPE_DELIVERY;
         $packaging = DonationAssignment::TYPE_PACKAGING;
 
-        return $query->where(function ($q) use ($approved, $cancelled, $delivery, $packaging) {
-            $q->whereDoesntHave('requests', fn ($r) => $r->where('status', $approved))
+        return $query->where(function ($q) use ($cancelled, $delivery, $packaging) {
+            $q->whereNull('accepted_charity_id')
                 ->orWhereRaw('NOT (
                 (donations.delivery_volunteers_needed = 0 OR (
                     SELECT COUNT(*) FROM donation_assignments da
-                    INNER JOIN donation_requests dr ON dr.id = da.donation_request_id AND dr.status = ?
+                    INNER JOIN donation_requests dr ON dr.id = da.donation_request_id
                     WHERE da.donation_id = donations.id AND da.assignment_type = ? AND da.status <> ?
+                    AND dr.charity_id = donations.accepted_charity_id
                 ) >= donations.delivery_volunteers_needed)
                 AND
                 (donations.packaging_volunteers_needed = 0 OR (
                     SELECT COUNT(*) FROM donation_assignments da
-                    INNER JOIN donation_requests dr ON dr.id = da.donation_request_id AND dr.status = ?
+                    INNER JOIN donation_requests dr ON dr.id = da.donation_request_id
                     WHERE da.donation_id = donations.id AND da.assignment_type = ? AND da.status <> ?
+                    AND dr.charity_id = donations.accepted_charity_id
                 ) >= donations.packaging_volunteers_needed)
             )', [
-                $approved, $delivery, $cancelled,
-                $approved, $packaging, $cancelled,
+                $delivery, $cancelled,
+                $packaging, $cancelled,
             ]);
         });
     }

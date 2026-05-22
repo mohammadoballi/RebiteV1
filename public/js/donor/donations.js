@@ -236,8 +236,9 @@ $(document).ready(function() {
             modal.find('#view-items-list').html(itemsHtml);
 
             let statusBadges = {
-                'pending': 'warning', 'accepted': 'info', 'assigned': 'primary',
-                'in_transit': 'secondary', 'delivered': 'success', 'completed': 'success', 'cancelled': 'danger'
+                'pending': 'warning',
+                'in_progress': 'info',
+                'completed': 'success'
             };
             modal.find('#view-status').html('<span class="badge bg-' + (statusBadges[data.status] || 'secondary') + '">' + data.status + '</span>');
             modal.find('#view-delivery-volunteers').html((data.delivery_volunteers_needed || 0) + ' <i class="fas fa-truck text-success"></i>');

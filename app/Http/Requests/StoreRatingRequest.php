@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Models\DonationRequest;
+use App\Models\Donation;
 use App\Models\Rating;
 use App\Models\User;
 use Illuminate\Foundation\Http\FormRequest;
@@ -39,10 +39,9 @@ class StoreRatingRequest extends FormRequest
             $user = $this->user();
             $donationId = $this->input('donation_id');
 
-            $approved = DonationRequest::query()
-                ->where('donation_id', $donationId)
-                ->where('charity_id', $user->id)
-                ->where('status', DonationRequest::STATUS_APPROVED)
+            $approved = Donation::query()
+                ->where('id', $donationId)
+                ->where('accepted_charity_id', $user->id)
                 ->exists();
 
             if (!$approved) {

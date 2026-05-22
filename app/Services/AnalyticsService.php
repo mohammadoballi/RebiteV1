@@ -35,12 +35,8 @@ class AnalyticsService
         return [
             'total' => (clone $query)->count(),
             'pending' => (clone $query)->where('status', 'pending')->count(),
-            'accepted' => (clone $query)->where('status', 'accepted')->count(),
-            'assigned' => (clone $query)->where('status', 'assigned')->count(),
-            'in_transit' => (clone $query)->where('status', 'in_transit')->count(),
-            'delivered' => (clone $query)->where('status', 'delivered')->count(),
+            'in_progress' => (clone $query)->where('status', 'in_progress')->count(),
             'completed' => (clone $query)->where('status', 'completed')->count(),
-            'cancelled' => (clone $query)->where('status', 'cancelled')->count(),
         ];
     }
 
@@ -329,7 +325,7 @@ class AnalyticsService
             'subscription_total_formatted' => $rev['total_formatted'],
             'revenue_filter_year' => $year,
             'revenue_filter_month' => $month,
-            'accepted_donations' => $donationStats['accepted'],
+            'accepted_donations' => $donationStats['in_progress'],
         ];
     }
 

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Charity;
 use App\Http\Controllers\Controller;
 use App\Models\City;
 use App\Models\Donation;
-use App\Models\DonationRequest;
+use App\Models\DonationAssignment;
 use App\Models\FoodCategory;
 use App\Models\Rating;
 use App\Models\Town;
@@ -40,9 +40,9 @@ class DonationController extends Controller
 
         $foodCategoryParents = FoodCategory::roots()->with('children')->get();
 
-        $requestedDonationIds = DonationRequest::where('charity_id', auth()->id())
-            ->where('status', DonationRequest::STATUS_APPROVED)
-            ->pluck('donation_id')
+        $requestedDonationIds = Donation::query()
+            ->where('accepted_charity_id', auth()->id())
+            ->pluck('id')
             ->toArray();
 
         return view('charity.donations.index', compact('donations', 'filters', 'cities', 'towns', 'requestedDonationIds', 'foodCategoryParents'));
@@ -55,6 +55,7 @@ class DonationController extends Controller
         $donation = Donation::with([
             'donor:id,name,city,city_id,town_id,phone,avatar',
             'items',
+            'assignments' => fn ($q) => $q->where('status', '!=', DonationAssignment::STATUS_CANCELLED),
             'assignments.volunteer:id,name',
             'cityRelation:id,name',
             'town:id,name',
@@ -69,15 +70,19 @@ class DonationController extends Controller
             ->pluck('rateable_id')
             ->all();
 
-        $hasApprovedRequest = DonationRequest::query()
-            ->where('donation_id', $donation->id)
-            ->where('charity_id', $charityId)
-            ->where('status', DonationRequest::STATUS_APPROVED)
-            ->exists();
+        $hasApprovedRequest = (int) $donation->accepted_charity_id === $charityId;
 
         $donation->setAttribute('rated_user_ids', $ratedUserIds);
         $donation->setAttribute('can_accept', $this->canCharityAccept($donation, $charityId));
         $donation->setAttribute('is_claimed_by_me', $hasApprovedRequest);
+        $requiredRateableIds = $this->getRequiredRateableIds($donation);
+        $allRated = collect($requiredRateableIds)->every(fn (int $id) => in_array($id, $ratedUserIds, true));
+        $canComplete = $hasApprovedRequest
+            && $donation->status === Donation::STATUS_IN_PROGRESS
+            && $allRated;
+        $donation->setAttribute('required_rateable_ids', $requiredRateableIds);
+        $donation->setAttribute('all_rated', $allRated);
+        $donation->setAttribute('can_complete', $canComplete);
 
         return response()->json($donation);
     }
@@ -99,11 +104,7 @@ class DonationController extends Controller
                 );
             }
 
-            if (DonationRequest::query()
-                ->where('donation_id', $donation->id)
-                ->where('charity_id', $charityId)
-                ->where('status', DonationRequest::STATUS_APPROVED)
-                ->exists()) {
+            if ((int) $donation->accepted_charity_id === $charityId) {
                 return response()->json(
                     ['message' => __('You have already accepted this donation.')],
                     409
@@ -133,8 +134,50 @@ class DonationController extends Controller
         return response()->json([
             'message' => __('Donation accepted successfully.'),
             'request' => $donationRequest,
-            'donation_status' => Donation::STATUS_ACCEPTED,
+            'donation_status' => Donation::STATUS_IN_PROGRESS,
         ], 201);
+    }
+
+    public function complete(int $id): JsonResponse
+    {
+        $charityId = (int) auth()->id();
+        $donation = Donation::with([
+            'donor:id,name',
+            'assignments' => fn ($q) => $q->where('status', '!=', DonationAssignment::STATUS_CANCELLED),
+        ])->findOrFail($id);
+
+        $hasApprovedRequest = (int) $donation->accepted_charity_id === $charityId;
+
+        if (! $hasApprovedRequest) {
+            return response()->json(['message' => __('You can only complete donations you have accepted.')], 403);
+        }
+
+        if ($donation->status !== Donation::STATUS_IN_PROGRESS) {
+            return response()->json(['message' => __('Only in-progress donations can be completed.')], 422);
+        }
+
+        $requiredRateableIds = $this->getRequiredRateableIds($donation);
+        $ratedUserIds = Rating::query()
+            ->where('rater_id', $charityId)
+            ->where('donation_id', $donation->id)
+            ->where('rateable_type', User::class)
+            ->pluck('rateable_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        $allRated = collect($requiredRateableIds)->every(fn (int $userId) => in_array($userId, $ratedUserIds, true));
+        if (! $allRated) {
+            return response()->json(['message' => __('Rate the donor and all assigned volunteers before completing this donation.')], 422);
+        }
+
+        $donation->update(['status' => Donation::STATUS_COMPLETED]);
+
+        $this->notificationService->notifyDonationStatusChanged($donation->fresh());
+
+        return response()->json([
+            'message' => __('Donation marked as completed.'),
+            'status' => Donation::STATUS_COMPLETED,
+        ]);
     }
 
     public function myRequests()
@@ -146,56 +189,26 @@ class DonationController extends Controller
     {
         $charityId = auth()->id();
 
-        $query = DonationRequest::where('charity_id', $charityId)
-            ->with(['donation.items']);
+        $query = Donation::query()
+            ->where('accepted_charity_id', $charityId)
+            ->with('items');
 
         return DataTables::eloquent($query)
-            ->addColumn('donation_food_type', function ($r) {
-                $donation = $r->donation;
-                if (!$donation) {
-                    return '-';
-                }
-
-                return $donation->items_summary ?: ($donation->food_type ?? '-');
+            ->addColumn('donation_food_type', function (Donation $d) {
+                return $d->items_summary ?: ($d->food_type ?? '-');
             })
-            ->addColumn('donation_quantity', function ($r) {
-                $donation = $r->donation;
-                if (!$donation) {
-                    return '-';
-                }
-
-                return $donation->quantities_summary ?: trim(($donation->quantity ?? '-') . ' ' . ($donation->quantity_unit ?? ''));
+            ->addColumn('donation_quantity', function (Donation $d) {
+                return $d->quantities_summary ?: trim(($d->quantity ?? '-') . ' ' . ($d->quantity_unit ?? ''));
             })
-            ->addColumn('display_status', function ($r) use ($charityId) {
-                if ($r->status !== DonationRequest::STATUS_APPROVED) {
-                    return ucfirst($r->status);
+            ->addColumn('display_status', function (Donation $d) {
+                if ($d->status === Donation::STATUS_COMPLETED) {
+                    return __('donations.completed');
                 }
 
-                $donorId = $r->donation?->user_id;
-                if (!$donorId) {
-                    return __('Accepted');
-                }
-
-                $rated = Rating::query()
-                    ->where('rater_id', $charityId)
-                    ->where('donation_id', $r->donation_id)
-                    ->where('rateable_id', $donorId)
-                    ->where('rateable_type', User::class)
-                    ->exists();
-
-                return $rated ? __('Rated') : __('Accepted');
+                return __('donations.in_progress');
             })
-            ->addColumn('actions', function ($r) {
-                $badge = '<span class="badge bg-' . match ($r->status) {
-                    'pending' => 'warning',
-                    'approved' => 'success',
-                    'rejected' => 'danger',
-                    default => 'secondary'
-                } . '">' . ucfirst($r->status) . '</span>';
-
-                $badge .= ' <button class="btn btn-sm btn-outline-success btn-view-request" data-donation-id="'.$r->donation_id.'" title="View"><i class="fas fa-eye"></i></button>';
-
-                return $badge;
+            ->addColumn('actions', function (Donation $d) {
+                return '<button class="btn btn-sm btn-outline-success btn-view-request" data-donation-id="'.$d->id.'" title="View"><i class="fas fa-eye"></i></button>';
             })
             ->rawColumns(['actions'])
             ->toJson();
@@ -211,21 +224,26 @@ class DonationController extends Controller
             return false;
         }
 
-        if (DonationRequest::query()
-            ->where('donation_id', $donation->id)
-            ->where('status', DonationRequest::STATUS_APPROVED)
-            ->exists()) {
-            return false;
-        }
-
-        if (DonationRequest::query()
-            ->where('donation_id', $donation->id)
-            ->where('charity_id', $charityId)
-            ->where('status', DonationRequest::STATUS_APPROVED)
-            ->exists()) {
-            return false;
-        }
-
         return true;
+    }
+
+    /**
+     * @return array<int,int>
+     */
+    private function getRequiredRateableIds(Donation $donation): array
+    {
+        $donorId = (int) ($donation->user_id ?? 0);
+        $volunteerIds = $donation->assignments
+            ->pluck('volunteer_id')
+            ->filter()
+            ->map(fn ($id) => (int) $id)
+            ->values()
+            ->all();
+
+        return collect(array_merge([$donorId], $volunteerIds))
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
     }
 }

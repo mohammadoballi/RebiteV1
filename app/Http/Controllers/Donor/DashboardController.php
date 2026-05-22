@@ -16,7 +16,6 @@ class DashboardController extends Controller
             'total' => (clone $donations)->count(),
             'pending' => (clone $donations)->where('status', 'pending')->count(),
             'completed' => (clone $donations)->where('status', 'completed')->count(),
-            'accepted' => (clone $donations)->where('status', 'accepted')->count(),
         ];
 
         $recentDonations = Donation::where('user_id', $userId)

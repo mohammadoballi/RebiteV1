@@ -8,6 +8,14 @@ function getUnitLabel(unit) {
     return labels[unit] || unit || '';
 }
 
+function updateCompleteDonationButtonState() {
+    const btn = $('#btn-complete-donation');
+    if (!btn.length) return;
+    const remainingRateButtons = $('#req-rateable-list .btn-rate-user').length;
+    const isAlreadyCompleted = String(btn.data('status') || '').toLowerCase() === 'completed';
+    btn.prop('disabled', remainingRateButtons > 0 || isAlreadyCompleted);
+}
+
 function buildRateRow(userId, userName, role, ratedUserIds, donationId) {
     const isRated = ratedUserIds.some(function (id) { return String(id) === String(userId); });
     const roleBadge = role === 'donor'
@@ -99,10 +107,32 @@ $(document).ready(function() {
                 modal.find('#req-rate-section').hide();
             }
 
+            const completeBtn = modal.find('#btn-complete-donation');
+            completeBtn.data('status', data.status || '');
+            completeBtn.prop('disabled', !data.can_complete);
+
             var viewEl = document.getElementById('viewRequestModal');
             if (viewEl && typeof bootstrap !== 'undefined') {
                 bootstrap.Modal.getOrCreateInstance(viewEl).show();
             }
+        });
+    });
+    $(document).on('click', '#btn-complete-donation', function () {
+        if (!currentDonationId || !window.routes.donationsComplete) return;
+        const btn = $(this);
+        btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>...');
+
+        $.post(window.routes.donationsComplete.replace(':id', currentDonationId), function (res) {
+            showSuccess(res.message || 'Donation completed');
+            $('#viewRequestModal').modal('hide');
+            if ($('#my-requests-table').length && $.fn.DataTable.isDataTable('#my-requests-table')) {
+                $('#my-requests-table').DataTable().ajax.reload(null, false);
+            }
+        }).fail(function (xhr) {
+            showError(xhr.responseJSON?.message || 'Failed to complete donation');
+        }).always(function () {
+            btn.html('<i class="fas fa-check-circle me-1"></i> Complete Donation');
+            updateCompleteDonationButtonState();
         });
     });
 });
@@ -110,6 +140,7 @@ $(document).ready(function() {
 window.onRatingSubmitted = function(rateableId) {
     const row = $('#req-rateable-list [data-rateable-id="' + rateableId + '"]');
     row.find('.btn-rate-user').replaceWith('<span class="badge bg-success"><i class="fas fa-check me-1"></i> Rated</span>');
+    updateCompleteDonationButtonState();
 
     if ($('#my-requests-table').length && $.fn.DataTable.isDataTable('#my-requests-table')) {
         $('#my-requests-table').DataTable().ajax.reload(null, false);

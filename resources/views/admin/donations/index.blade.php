@@ -10,12 +10,8 @@
         <select id="donationStatusFilter" class="form-select form-select-sm" style="width:auto">
             <option value="">{{ __('All') }}</option>
             <option value="pending">{{ __('donations.pending') }}</option>
-            <option value="accepted">{{ __('donations.accepted') }}</option>
-            <option value="assigned">{{ __('donations.assigned') }}</option>
-            <option value="in_transit">{{ __('donations.in_transit') }}</option>
-            <option value="delivered">{{ __('donations.delivered') }}</option>
+            <option value="in_progress">{{ __('donations.in_progress') }}</option>
             <option value="completed">{{ __('donations.completed') }}</option>
-            <option value="cancelled">{{ __('donations.cancelled') }}</option>
         </select>
     </div>
 </div>

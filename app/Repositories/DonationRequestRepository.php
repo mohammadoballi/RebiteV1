@@ -30,17 +30,4 @@ class DonationRequestRepository extends BaseRepository
             ->get();
     }
 
-    public function approve(int $id): bool
-    {
-        return $this->model->findOrFail($id)->update([
-            'status' => 'approved',
-        ]);
-    }
-
-    public function reject(int $id): bool
-    {
-        return $this->model->findOrFail($id)->update([
-            'status' => 'rejected',
-        ]);
-    }
 }

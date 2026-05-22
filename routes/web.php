@@ -179,6 +179,7 @@ Route::middleware(['auth', 'approved'])->group(function () {
         // Actions (subscription required)
         Route::middleware('subscribed')->group(function () {
             Route::post('donations/{id}/accept', [CharityDonationController::class, 'accept'])->name('donations.accept');
+            Route::post('donations/{id}/complete', [CharityDonationController::class, 'complete'])->name('donations.complete');
         });
     });
 

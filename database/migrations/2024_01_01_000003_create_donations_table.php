@@ -21,8 +21,7 @@ return new class extends Migration
             $table->dateTime('pickup_time');
             $table->dateTime('expiry_time')->nullable();
             $table->enum('status', [
-                'pending', 'accepted', 'assigned', 'in_transit',
-                'delivered', 'completed', 'cancelled',
+                'pending', 'in_progress', 'completed',
             ])->default('pending');
             $table->text('notes')->nullable();
             $table->string('image')->nullable();

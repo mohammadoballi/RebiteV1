@@ -114,7 +114,7 @@ class DonationService
             $with[] = 'assignments:id,donation_id,assignment_type,status';
             $query = Donation::query()
                 ->with($with)
-                ->whereIn('status', [Donation::STATUS_PENDING, Donation::STATUS_ACCEPTED])
+                ->whereIn('status', [Donation::STATUS_PENDING, Donation::STATUS_IN_PROGRESS])
                 ->where(function ($q) {
                     $q->whereNull('expiry_time')
                         ->orWhere('expiry_time', '>', now());

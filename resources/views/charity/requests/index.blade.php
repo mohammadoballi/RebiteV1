@@ -37,6 +37,11 @@
                     <hr>
                     <h6 class="fw-bold"><i class="fas fa-star me-1 text-warning"></i> {{ __('Rate') }}</h6>
                     <div id="req-rateable-list"></div>
+                    <div class="mt-3 text-end">
+                        <button type="button" class="btn btn-success" id="btn-complete-donation" disabled>
+                            <i class="fas fa-check-circle me-1"></i> {{ __('Complete Donation') }}
+                        </button>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -53,7 +58,8 @@
 <script>
     window.routes = {
         myRequestsDatatable: '{{ route("charity.my-requests.datatable") }}',
-        donationsShow: '{{ route("charity.donations.show", ":id") }}'
+        donationsShow: '{{ route("charity.donations.show", ":id") }}',
+        donationsComplete: '{{ route("charity.donations.complete", ":id") }}'
     };
     window.unitLabels = {
         kg: @json(__('donations.kg')),

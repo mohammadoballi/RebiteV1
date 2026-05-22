@@ -87,25 +87,11 @@ class DonationController extends Controller
     public function updateStatus(Request $request, int $id): JsonResponse
     {
         $request->validate([
-            'status' => ['required', 'string'],
+            'status' => ['required', 'in:pending,in_progress,completed'],
         ]);
 
         $donation = Donation::findOrFail($id);
         $status = $request->input('status');
-
-        // Admin "accepted" without a charity claim = publish to marketplace (stay pending).
-        if ($status === Donation::STATUS_ACCEPTED && $donation->accepted_charity_id === null) {
-            $donation->update([
-                'admin_approved_at' => now(),
-                'status' => Donation::STATUS_PENDING,
-            ]);
-            $this->notificationService->notifyDonationStatusChanged($donation->fresh());
-
-            return response()->json([
-                'message' => __('Donation approved and published for charities.'),
-                'status' => Donation::STATUS_PENDING,
-            ]);
-        }
 
         $this->donationService->updateStatus($id, $status);
 

@@ -206,7 +206,7 @@ class DatabaseSeeder extends Seeder
 
         // ── Donations (60) ──
         $donations = [];
-        $statuses = ['pending', 'pending', 'pending', 'accepted', 'accepted', 'assigned', 'in_transit', 'delivered', 'completed', 'completed', 'completed', 'cancelled'];
+        $statuses = ['pending', 'pending', 'pending', 'in_progress', 'in_progress', 'completed', 'completed', 'completed'];
 
         for ($i = 0; $i < 60; $i++) {
             $donorUser = $donors[array_rand($donors)];
@@ -218,7 +218,7 @@ class DatabaseSeeder extends Seeder
             }
             $volunteersNeeded = $deliveryNeeded + $packagingNeeded;
             $volunteersCount = 0;
-            if (in_array($status, ['assigned', 'in_transit', 'delivered', 'completed'])) {
+            if (in_array($status, ['in_progress', 'completed'])) {
                 $volunteersCount = min(rand(1, $volunteersNeeded), $volunteersNeeded);
             }
             if ($status === 'completed') {
@@ -271,8 +271,8 @@ class DatabaseSeeder extends Seeder
             $donations[] = $donation;
         }
 
-        // ── Donation Requests (80) ──
-        $requestStatuses = ['pending', 'pending', 'approved', 'approved', 'rejected'];
+        // ── Donation Requests (direct-take flow: request rows remain pending only) ──
+        $pendingRequestStatuses = ['pending'];
         $messages = [
             'We would love to receive this donation for our beneficiaries.',
             'Our center serves 200 families daily, this would help greatly.',
@@ -282,21 +282,43 @@ class DatabaseSeeder extends Seeder
         ];
 
         $createdRequests = [];
-        for ($i = 0; $i < 80; $i++) {
-            $donation = $donations[array_rand($donations)];
-            $charityUser = $charities[array_rand($charities)];
+        foreach ($donations as $donation) {
+            $requestCount = rand(1, 3);
+            $usedCharityIds = [];
 
-            $exists = DonationRequest::where('donation_id', $donation->id)
-                ->where('charity_id', $charityUser->id)->exists();
-            if ($exists) continue;
+            if (in_array($donation->status, ['in_progress', 'completed'], true)) {
+                $acceptedCharity = $charities[array_rand($charities)];
+                $donation->update(['accepted_charity_id' => $acceptedCharity->id]);
 
-            $req = DonationRequest::create([
-                'donation_id' => $donation->id,
-                'charity_id' => $charityUser->id,
-                'status' => $requestStatuses[array_rand($requestStatuses)],
-                'message' => $messages[array_rand($messages)],
-            ]);
-            $createdRequests[] = $req;
+                $approvedRequest = DonationRequest::create([
+                    'donation_id' => $donation->id,
+                    'charity_id' => $acceptedCharity->id,
+                    'status' => DonationRequest::STATUS_PENDING,
+                    'message' => $messages[array_rand($messages)],
+                ]);
+                $createdRequests[] = $approvedRequest;
+                $usedCharityIds[] = (int) $acceptedCharity->id;
+
+                $requestCount = max(0, $requestCount - 1);
+            }
+
+            for ($i = 0; $i < $requestCount; $i++) {
+                $availableCharities = array_values(array_filter($charities, fn ($charity) => !in_array((int) $charity->id, $usedCharityIds, true)));
+                if (empty($availableCharities)) {
+                    break;
+                }
+
+                $charityUser = $availableCharities[array_rand($availableCharities)];
+                $usedCharityIds[] = (int) $charityUser->id;
+
+                $req = DonationRequest::create([
+                    'donation_id' => $donation->id,
+                    'charity_id' => $charityUser->id,
+                    'status' => $pendingRequestStatuses[array_rand($pendingRequestStatuses)],
+                    'message' => $messages[array_rand($messages)],
+                ]);
+                $createdRequests[] = $req;
+            }
         }
 
         // ── Donation Assignments (40) ──
@@ -322,8 +344,12 @@ class DatabaseSeeder extends Seeder
             }
 
             $reqId = null;
-            $matchingReq = DonationRequest::where('donation_id', $donation->id)->where('status', 'approved')->first();
-            if ($matchingReq) $reqId = $matchingReq->id;
+            $matchingReq = DonationRequest::where('donation_id', $donation->id)
+                ->when($donation->accepted_charity_id, fn ($q) => $q->where('charity_id', $donation->accepted_charity_id))
+                ->first();
+            if ($matchingReq) {
+                $reqId = $matchingReq->id;
+            }
 
             DonationAssignment::create([
                 'donation_id' => $donation->id,
@@ -384,6 +410,6 @@ class DatabaseSeeder extends Seeder
             $vol->update(['points' => $points]);
         }
 
-        $this->command->info('Seeded (Jordan): 1 admin, 18 donors (15+3 pending), 12 charities (10+2 pending), 22 volunteers (20+2 pending), 60 donations, ~80 requests, 40 assignments, ratings & points. Login password: ' . self::SEED_PASSWORD);
+        $this->command->info('Seeded (Jordan): 1 admin, 18 donors (15+3 pending), 12 charities (10+2 pending), 22 volunteers (20+2 pending), 60 donations, requests aligned to pending/in_progress/completed flow, 40 assignments, ratings & points. Login password: ' . self::SEED_PASSWORD);
     }
 }

@@ -86,12 +86,8 @@ $(document).ready(function() {
 function getStatusBadge(status) {
     const badges = {
         'pending': '<span class="badge bg-warning">Pending</span>',
-        'accepted': '<span class="badge bg-info">Accepted</span>',
-        'assigned': '<span class="badge bg-primary">Assigned</span>',
-        'in_transit': '<span class="badge bg-secondary">In Transit</span>',
-        'delivered': '<span class="badge bg-success">Delivered</span>',
-        'completed': '<span class="badge bg-success">Completed</span>',
-        'cancelled': '<span class="badge bg-danger">Cancelled</span>'
+        'in_progress': '<span class="badge bg-info">In Progress</span>',
+        'completed': '<span class="badge bg-success">Completed</span>'
     };
     return badges[status] || '<span class="badge bg-secondary">' + status + '</span>';
 }
