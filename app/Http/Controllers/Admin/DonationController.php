@@ -42,11 +42,6 @@ class DonationController extends Controller
 
                 return $d->quantities_summary ?: '—';
             })
-            ->addColumn('actions', function (Donation $d) {
-                return '<button class="btn btn-sm btn-outline-success btn-view-donation" data-id="'.$d->id.'" title="View"><i class="fas fa-eye"></i></button>
-                        <button class="btn btn-sm btn-outline-danger btn-delete-donation" data-id="'.$d->id.'" title="Delete"><i class="fas fa-trash"></i></button>';
-            })
-            ->rawColumns(['actions'])
             ->toJson();
     }
 

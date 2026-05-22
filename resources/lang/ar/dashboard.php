@@ -28,4 +28,8 @@ return [
     'subscription_revenue' => 'إيرادات الاشتراك',
     'users_by_role' => 'المستخدمون حسب الدور',
     'revenue_usd' => 'الإيرادات (دولار)',
+    'saved_qty' => 'المحفوظ',
+    'remaining_qty' => 'المتبقي',
+    'unit_types' => 'أنواع الوحدات',
+    'no_food_saved_data' => 'لا توجد بيانات للطعام المحفوظ بعد',
 ];

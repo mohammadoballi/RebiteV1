@@ -92,6 +92,13 @@
         assignmentsPickup: '{{ route("volunteer.assignments.pickup", ":id") }}',
         assignmentsDeliver: '{{ route("volunteer.assignments.deliver", ":id") }}'
     };
+    window.unitLabels = {
+        kg: @json(__('donations.kg')),
+        pieces: @json(__('donations.pieces')),
+        boxes: @json(__('donations.boxes')),
+        bags: @json(__('donations.bags')),
+        plates: @json(__('donations.plates'))
+    };
 </script>
 <script src="{{ asset('js/volunteer/assignments.js') }}"></script>
 @endpush

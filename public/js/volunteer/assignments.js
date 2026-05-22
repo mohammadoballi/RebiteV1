@@ -2,6 +2,11 @@
  * Volunteer - Assignments Management
  */
 $(document).ready(function() {
+    const getUnitLabel = function (unit) {
+        const labels = window.unitLabels || {};
+        return labels[unit] || unit || '';
+    };
+
     let assignmentsTable = initDataTable('assignments-table', window.routes.assignmentsDatatable, [
         { data: 'id', name: 'id' },
         { data: 'donation_food_type', name: 'donation.food_type' },
@@ -20,7 +25,7 @@ $(document).ready(function() {
         $.get(window.routes.assignmentsShow.replace(':id', assignmentId), function(data) {
             let modal = $('#viewAssignmentModal');
             modal.find('#assign-food-type').text(data.donation ? data.donation.food_type : '-');
-            modal.find('#assign-quantity').text(data.donation ? data.donation.quantity + ' ' + data.donation.quantity_unit : '-');
+            modal.find('#assign-quantity').text(data.donation ? data.donation.quantity + ' ' + getUnitLabel(data.donation.quantity_unit) : '-');
             var loc = '';
             if (data.donation && data.donation.city_relation) loc = data.donation.city_relation.name;
             if (data.donation && data.donation.town) loc += (loc ? ' / ' : '') + data.donation.town.name;

@@ -3,6 +3,11 @@
  */
 let currentDonationId = null;
 
+function getUnitLabel(unit) {
+    const labels = window.unitLabels || {};
+    return labels[unit] || unit || '';
+}
+
 function buildRateRow(userId, userName, role, ratedUserIds, donationId) {
     const isRated = ratedUserIds.some(function (id) { return String(id) === String(userId); });
     const roleBadge = role === 'donor'
@@ -66,7 +71,7 @@ $(document).ready(function() {
             if (data.items && data.items.length > 0) {
                 html += '<div class="col-12"><strong>Items:</strong><ul class="mb-0">';
                 data.items.forEach(function(i) {
-                    html += '<li>' + i.food_type + ' — ' + i.quantity + ' ' + i.quantity_unit + '</li>';
+                    html += '<li>' + i.food_type + ' — ' + i.quantity + ' ' + getUnitLabel(i.quantity_unit) + '</li>';
                 });
                 html += '</ul></div>';
             }

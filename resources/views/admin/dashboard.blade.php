@@ -16,7 +16,7 @@
 
 {{-- KPI cards (drill-down) --}}
 <div class="row g-3 mb-4">
-    <div class="col-sm-6 col-xl-3">
+    <div class="col-sm-6 col-xl-4">
         <a href="{{ route('admin.users.index') }}" class="text-decoration-none">
             <div class="card h-100 border-0 shadow-sm rb-kpi-card">
                 <div class="card-body d-flex align-items-center">
@@ -33,7 +33,7 @@
         </a>
     </div>
 
-    <div class="col-sm-6 col-xl-3">
+    <div class="col-sm-6 col-xl-4">
         <a href="{{ route('admin.donations.index') }}" class="text-decoration-none">
             <div class="card h-100 border-0 shadow-sm rb-kpi-card">
                 <div class="card-body d-flex align-items-center">
@@ -50,7 +50,7 @@
         </a>
     </div>
 
-    <div class="col-sm-6 col-xl-3">
+    <div class="col-sm-6 col-xl-4">
         <a href="{{ route('admin.users.index', ['status' => 'pending']) }}" class="text-decoration-none">
             <div class="card h-100 border-0 shadow-sm rb-kpi-card">
                 <div class="card-body d-flex align-items-center">
@@ -67,26 +67,10 @@
         </a>
     </div>
 
-    <div class="col-sm-6 col-xl-3">
-        <a href="{{ route('admin.donations.index', ['status' => 'pending']) }}" class="text-decoration-none">
-            <div class="card h-100 border-0 shadow-sm rb-kpi-card">
-                <div class="card-body d-flex align-items-center">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3"
-                         style="width:52px;height:52px;background:rgba(108,117,125,.12)">
-                        <i class="fas fa-store fa-lg text-secondary"></i>
-                    </div>
-                    <div>
-                        <h6 class="text-muted mb-1 small">{{ __('dashboard.open_marketplace_donations') }}</h6>
-                        <h3 class="mb-0 fw-bold text-dark">{{ $data['pending_donations'] ?? 0 }}</h3>
-                    </div>
-                </div>
-            </div>
-        </a>
-    </div>
 </div>
 
 <div class="row g-3 mb-4">
-    <div class="col-sm-6 col-xl-3">
+    <div class="col-sm-6 col-xl-4">
         <a href="{{ route('admin.donations.index', ['status' => 'accepted']) }}" class="text-decoration-none">
             <div class="card h-100 border-0 shadow-sm rb-kpi-card">
                 <div class="card-body d-flex align-items-center">
@@ -103,22 +87,35 @@
         </a>
     </div>
 
-    <div class="col-sm-6 col-xl-3">
+    <div class="col-sm-6 col-xl-4">
         <div class="card h-100 border-0 shadow-sm">
-            <div class="card-body d-flex align-items-center">
-                <div class="rounded-circle d-flex align-items-center justify-content-center me-3"
-                     style="width:52px;height:52px;background:rgba(13,202,240,.12)">
-                    <i class="fas fa-weight-hanging fa-lg" style="color:#0dcaf0"></i>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-2">
+                    <div class="rounded-circle d-flex align-items-center justify-content-center me-2"
+                         style="width:42px;height:42px;background:rgba(13,202,240,.12)">
+                        <i class="fas fa-weight-hanging" style="color:#0dcaf0"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-0 small">{{ __('dashboard.food_saved') }}</h6>
+                        <h5 class="mb-0 fw-bold">{{ $data['food_saved'] ?? '0 items' }}</h5>
+                    </div>
                 </div>
-                <div>
-                    <h6 class="text-muted mb-1 small">{{ __('dashboard.food_saved') }}</h6>
-                    <h3 class="mb-0 fw-bold">{{ $data['food_saved'] ?? '0 kg' }}</h3>
+                <div class="position-relative" style="height: 160px;">
+                    <canvas id="foodSavedPieChart"></canvas>
+                    <div id="foodSavedEmptyState" class="position-absolute top-50 start-50 translate-middle text-center text-muted small d-none">
+                        <i class="fas fa-chart-pie d-block mb-1"></i>{{ __('dashboard.no_food_saved_data') }}
+                    </div>
+                </div>
+                <div class="small mt-2" id="foodSavedLegend"></div>
+                <div class="d-flex justify-content-between small text-muted mt-2">
+                    <span>{{ __('dashboard.saved_qty') }}: {{ number_format($data['food_saved_total_items'] ?? 0) }} {{ __('items') }}</span>
+                    <span>{{ __('dashboard.unit_types') }}: {{ count($data['food_saved_chart'] ?? []) }}</span>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="col-sm-6 col-xl-3">
+    <div class="col-sm-6 col-xl-4">
         <div class="card h-100 border-0 shadow-sm border-success border-opacity-50">
             <div class="card-body d-flex align-items-center">
                 <div class="rounded-circle d-flex align-items-center justify-content-center me-3"
@@ -134,22 +131,6 @@
         </div>
     </div>
 
-    <div class="col-sm-6 col-xl-3">
-        <a href="{{ route('admin.charity-management.index') }}" class="text-decoration-none">
-            <div class="card h-100 border-0 shadow-sm rb-kpi-card">
-                <div class="card-body d-flex align-items-center">
-                    <div class="rounded-circle d-flex align-items-center justify-content-center me-3"
-                         style="width:52px;height:52px;background:rgba(111,66,193,.12)">
-                        <i class="fas fa-hands-helping fa-lg" style="color:#6f42c1"></i>
-                    </div>
-                    <div>
-                        <h6 class="text-muted mb-1 small">{{ __('dashboard.charity_claims_records') }}</h6>
-                        <h3 class="mb-0 fw-bold text-dark">{{ \App\Models\DonationRequest::count() }}</h3>
-                    </div>
-                </div>
-            </div>
-        </a>
-    </div>
 </div>
 
 <style>
@@ -159,17 +140,7 @@ a:hover .rb-kpi-card { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgb
 
 {{-- Charts --}}
 <div class="row g-3 mb-4">
-    <div class="col-lg-4">
-        <div class="card h-100 border-0 shadow-sm">
-            <div class="card-header bg-white fw-semibold">
-                <i class="fas fa-chart-pie me-1 text-success"></i> {{ __('dashboard.donations_by_status') }}
-            </div>
-            <div class="card-body d-flex align-items-center justify-content-center">
-                <canvas id="donationsByStatusChart" height="220"></canvas>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-4">
+    <div class="col-lg-6">
         <div class="card h-100 border-0 shadow-sm">
             <div class="card-header bg-white fw-semibold">
                 <i class="fas fa-chart-bar me-1 text-success"></i> {{ __('dashboard.subscription_revenue') }} (USD)
@@ -179,7 +150,7 @@ a:hover .rb-kpi-card { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgb
             </div>
         </div>
     </div>
-    <div class="col-lg-4">
+    <div class="col-lg-6">
         <div class="card h-100 border-0 shadow-sm">
             <div class="card-header bg-white fw-semibold">
                 <i class="fas fa-chart-pie me-1 text-success"></i> {{ __('dashboard.users_by_role') }}
@@ -206,6 +177,12 @@ a:hover .rb-kpi-card { transform: translateY(-2px); box-shadow: 0 .5rem 1rem rgb
 @endsection
 
 @push('scripts')
+@php
+    $monthlyDonations = $data['monthly_donations'] ?? [];
+    $monthlySubscriptionCents = $data['monthly_subscription_cents'] ?? [];
+    $usersByRole = $data['users_by_role'] ?? [];
+    $foodSavedChart = $data['food_saved_chart'] ?? [];
+@endphp
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
@@ -213,7 +190,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const greenLight = '#28a745';
     const gridColor  = 'rgba(0,0,0,.06)';
 
-    const monthlyData = @json($data['monthly_donations'] ?? []);
+    const monthlyData = @json($monthlyDonations);
     const monthLabels = Object.keys(monthlyData);
     const monthValues = Object.values(monthlyData);
 
@@ -240,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    const subData = @json($data['monthly_subscription_cents'] ?? []);
+    const subData = @json($monthlySubscriptionCents);
     const subLabels = Object.keys(subData);
     const subValues = Object.values(subData).map(c => Math.round(c) / 100);
 
@@ -268,10 +245,17 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    const roleData   = @json($data['users_by_role'] ?? []);
+    const roleData   = @json($usersByRole);
     const roleLabels = Object.keys(roleData);
     const roleValues = Object.values(roleData);
     const roleColors = ['#0d6efd', '#198754', '#ffc107', '#0dcaf0', '#6f42c1', '#fd7e14'];
+    const unitLabels = {
+        kg: @json(__('donations.kg')),
+        pieces: @json(__('donations.pieces')),
+        boxes: @json(__('donations.boxes')),
+        bags: @json(__('donations.bags')),
+        plates: @json(__('donations.plates'))
+    };
 
     new Chart(document.getElementById('usersByRoleChart'), {
         type: 'doughnut',
@@ -293,28 +277,76 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    const dsByStatus = @json($data['donations_by_status'] ?? []);
-    const dsLabels = Object.keys(dsByStatus);
-    const dsValues = Object.values(dsByStatus);
+    const foodSavedData = @json($foodSavedChart);
 
-    new Chart(document.getElementById('donationsByStatusChart'), {
-        type: 'doughnut',
-        data: {
-            labels: dsLabels,
-            datasets: [{
-                data: dsValues,
-                backgroundColor: roleColors.slice(0, dsLabels.length),
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { position: 'bottom', labels: { padding: 10, boxWidth: 10 } }
+    const foodSavedCanvas = document.getElementById('foodSavedPieChart');
+    const foodSavedEmptyState = document.getElementById('foodSavedEmptyState');
+    const foodSavedLegend = document.getElementById('foodSavedLegend');
+    const unitRows = Array.isArray(foodSavedData) ? foodSavedData : [];
+    const pieLabels = unitRows.map(function(row) {
+        const key = String(row.unit || '').toLowerCase();
+        return unitLabels[key] || key.toUpperCase() || '-';
+    });
+    const pieValues = unitRows.map(function(row) { return Number(row.quantity || 0); });
+    const pieCounts = unitRows.map(function(row) { return Number(row.count || 0); });
+    const piePalette = ['#198754', '#0d6efd', '#ffc107', '#0dcaf0', '#6f42c1', '#fd7e14', '#20c997', '#6c757d', '#6610f2', '#d63384'];
+    const pieColors = unitRows.map(function(_, idx) { return piePalette[idx % piePalette.length]; });
+    const totalQty = pieValues.reduce(function(acc, v) { return acc + v; }, 0);
+
+    if (foodSavedCanvas) {
+        if (unitRows.length === 0 || totalQty <= 0) {
+            foodSavedCanvas.classList.add('d-none');
+            foodSavedEmptyState?.classList.remove('d-none');
+            if (foodSavedLegend) {
+                foodSavedLegend.innerHTML = '';
+            }
+        } else {
+            const foodSavedChart = new Chart(foodSavedCanvas, {
+                type: 'pie',
+                data: {
+                    labels: pieLabels,
+                    datasets: [{
+                        data: pieValues,
+                        backgroundColor: pieColors,
+                        borderColor: '#ffffff',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const val = Number(context.raw || 0);
+                                    const count = Number(pieCounts[context.dataIndex] || 0);
+                                    const pct = totalQty > 0 ? ((val / totalQty) * 100).toFixed(1) : '0.0';
+                                    return context.label + ': ' + val.toFixed(1) + ' (' + count + ' {{ __('items') }}, ' + pct + '%)';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (foodSavedLegend) {
+                const labels = foodSavedChart.data.labels || [];
+                const values = foodSavedChart.data.datasets[0].data || [];
+                const colors = foodSavedChart.data.datasets[0].backgroundColor || [];
+                foodSavedLegend.innerHTML = labels.map(function(label, idx) {
+                    const value = Number(values[idx] || 0);
+                    const count = Number(pieCounts[idx] || 0);
+                    const pct = totalQty > 0 ? ((value / totalQty) * 100).toFixed(1) : '0.0';
+                    return '<div class="d-flex align-items-center justify-content-between mb-1">'
+                        + '<span><i class="fas fa-circle me-1" style="color:' + colors[idx] + '"></i>' + label + '</span>'
+                        + '<span>' + value.toFixed(1) + ' · ' + count + ' · ' + pct + '%</span>'
+                        + '</div>';
+                }).join('');
             }
         }
-    });
+    }
 });
 </script>
 @endpush

@@ -33,7 +33,6 @@
                         <th>{{ __('donations.status') }}</th>
                         <th>{{ __('donations.pickup_time') }}</th>
                         <th>{{ __('Created At') }}</th>
-                        <th>{{ __('general.actions') }}</th>
                     </tr>
                 </thead>
             </table>
@@ -54,8 +53,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('general.close') }}"></button>
             </div>
             <div class="modal-body">
-                <input type="hidden" id="update-donation-id">
-
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label text-muted small mb-0">{{ __('donations.donor') }}</label>
@@ -64,14 +61,6 @@
                     <div class="col-12">
                         <label class="form-label text-muted small mb-0">{{ __('Food Items') }}</label>
                         <div id="donation-items-list" class="fw-semibold mb-2">-</div>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small mb-0">{{ __('donations.food_type') }}</label>
-                        <p class="fw-semibold mb-2" id="donation-food-type">-</p>
-                    </div>
-                    <div class="col-md-6">
-                        <label class="form-label text-muted small mb-0">{{ __('donations.quantity') }}</label>
-                        <p class="fw-semibold mb-2" id="donation-quantity">-</p>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label text-muted small mb-0">{{ __('donations.status') }}</label>
@@ -117,37 +106,6 @@
                     </div>
                 </div>
 
-                <hr>
-
-                <div class="d-flex flex-wrap gap-2 mb-3" id="donation-approve-row">
-                    <button type="button" class="btn btn-success" id="btn-approve-donation">
-                        <i class="fas fa-check-circle me-1"></i> {{ __('Approve for charities') }}
-                    </button>
-                    <span class="badge bg-success align-self-center d-none" id="donation-approved-badge">
-                        <i class="fas fa-check me-1"></i> {{ __('Published for charities') }}
-                    </span>
-                </div>
-
-                {{-- Status Update --}}
-                <div class="row align-items-end g-2">
-                    <div class="col-md-8">
-                        <label for="donation-status-select" class="form-label fw-semibold">{{ __('Update Status') }}</label>
-                        <select id="donation-status-select" class="form-select">
-                            <option value="pending">{{ __('donations.pending') }}</option>
-                            <option value="accepted">{{ __('donations.accepted') }}</option>
-                            <option value="assigned">{{ __('donations.assigned') }}</option>
-                            <option value="in_transit">{{ __('donations.in_transit') }}</option>
-                            <option value="delivered">{{ __('donations.delivered') }}</option>
-                            <option value="completed">{{ __('donations.completed') }}</option>
-                            <option value="cancelled">{{ __('donations.cancelled') }}</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <button type="button" class="btn btn-success w-100" id="btn-update-status">
-                            <i class="fas fa-sync-alt me-1"></i> {{ __('general.update') }}
-                        </button>
-                    </div>
-                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ __('general.close') }}</button>
@@ -161,10 +119,14 @@
 <script>
     window.routes = {
         donationsDatatable: '{{ route("admin.donations.datatable") }}',
-        donationsShow:      '{{ route("admin.donations.show", ":id") }}',
-        donationsStatus:    '{{ route("admin.donations.update-status", ":id") }}',
-        donationsApprove:   '{{ route("admin.donations.approve", ":id") }}',
-        donationsDestroy:   '{{ route("admin.donations.destroy", ":id") }}'
+        donationsShow:      '{{ route("admin.donations.show", ":id") }}'
+    };
+    window.unitLabels = {
+        kg: @json(__('donations.kg')),
+        pieces: @json(__('donations.pieces')),
+        boxes: @json(__('donations.boxes')),
+        bags: @json(__('donations.bags')),
+        plates: @json(__('donations.plates'))
     };
 </script>
 <script src="{{ asset('js/admin/donations.js') }}"></script>

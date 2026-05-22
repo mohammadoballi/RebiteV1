@@ -9,31 +9,38 @@ use App\Models\DonationRequest;
 use App\Models\Rating;
 use App\Models\SubscriptionPayment;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class AnalyticsService
 {
-    public function getUserStats(): array
+    public function getUserStats(?Carbon $start = null, ?Carbon $end = null): array
     {
+        $query = User::query();
+        $this->applyDateRange($query, $start, $end, 'created_at');
+
         return [
-            'total' => User::count(),
-            'pending' => User::where('status', 'pending')->count(),
-            'approved' => User::where('status', 'approved')->count(),
-            'rejected' => User::where('status', 'rejected')->count(),
+            'total' => (clone $query)->count(),
+            'pending' => (clone $query)->where('status', 'pending')->count(),
+            'approved' => (clone $query)->where('status', 'approved')->count(),
+            'rejected' => (clone $query)->where('status', 'rejected')->count(),
         ];
     }
 
-    public function getDonationStats(): array
+    public function getDonationStats(?Carbon $start = null, ?Carbon $end = null): array
     {
+        $query = Donation::query();
+        $this->applyDateRange($query, $start, $end, 'created_at');
+
         return [
-            'total' => Donation::count(),
-            'pending' => Donation::where('status', 'pending')->count(),
-            'accepted' => Donation::where('status', 'accepted')->count(),
-            'assigned' => Donation::where('status', 'assigned')->count(),
-            'in_transit' => Donation::where('status', 'in_transit')->count(),
-            'delivered' => Donation::where('status', 'delivered')->count(),
-            'completed' => Donation::where('status', 'completed')->count(),
-            'cancelled' => Donation::where('status', 'cancelled')->count(),
+            'total' => (clone $query)->count(),
+            'pending' => (clone $query)->where('status', 'pending')->count(),
+            'accepted' => (clone $query)->where('status', 'accepted')->count(),
+            'assigned' => (clone $query)->where('status', 'assigned')->count(),
+            'in_transit' => (clone $query)->where('status', 'in_transit')->count(),
+            'delivered' => (clone $query)->where('status', 'delivered')->count(),
+            'completed' => (clone $query)->where('status', 'completed')->count(),
+            'cancelled' => (clone $query)->where('status', 'cancelled')->count(),
         ];
     }
 
@@ -60,29 +67,99 @@ class AnalyticsService
         ];
     }
 
-    public function getFoodSavedStats(): array
+    public function getFoodSavedStats(?Carbon $start = null, ?Carbon $end = null): array
     {
-        $totalQty = (float) Donation::where('status', 'completed')->sum('quantity');
-        $totalItems = DonationItem::whereHas('donation', fn($q) => $q->where('status', 'completed'))->count();
+        $itemRowsQuery = DonationItem::query()
+            ->join('donations', 'donations.id', '=', 'donation_items.donation_id')
+            ->where('donations.status', Donation::STATUS_COMPLETED)
+            ->selectRaw('LOWER(COALESCE(NULLIF(donation_items.quantity_unit, ""), "kg")) as unit_key')
+            ->selectRaw('SUM(CAST(donation_items.quantity as DECIMAL(14,2))) as total_quantity')
+            ->selectRaw('COUNT(*) as item_count')
+            ->groupBy('unit_key');
+
+        $this->applyDateRange($itemRowsQuery, $start, $end, 'donations.created_at');
+        $itemRows = $itemRowsQuery->get();
+
+        $legacyRowsQuery = Donation::query()
+            ->where('status', Donation::STATUS_COMPLETED)
+            ->doesntHave('items')
+            ->selectRaw('LOWER(COALESCE(NULLIF(quantity_unit, ""), "kg")) as unit_key')
+            ->selectRaw('SUM(CAST(quantity as DECIMAL(14,2))) as total_quantity')
+            ->selectRaw('COUNT(*) as item_count')
+            ->groupBy('unit_key');
+
+        $this->applyDateRange($legacyRowsQuery, $start, $end, 'created_at');
+        $legacyRows = $legacyRowsQuery->get();
+
+        $grouped = [];
+
+        foreach ($itemRows as $row) {
+            $unit = (string) $row->unit_key;
+            $grouped[$unit] = [
+                'unit' => $unit,
+                'quantity' => (float) $row->total_quantity,
+                'count' => (int) $row->item_count,
+            ];
+        }
+
+        foreach ($legacyRows as $row) {
+            $unit = (string) $row->unit_key;
+            if (! isset($grouped[$unit])) {
+                $grouped[$unit] = [
+                    'unit' => $unit,
+                    'quantity' => 0.0,
+                    'count' => 0,
+                ];
+            }
+            $grouped[$unit]['quantity'] += (float) $row->total_quantity;
+            $grouped[$unit]['count'] += (int) $row->item_count;
+        }
+
+        uasort($grouped, fn (array $a, array $b) => $b['quantity'] <=> $a['quantity']);
+
+        $totalItems = array_sum(array_column($grouped, 'count'));
+        $totalQuantity = array_sum(array_column($grouped, 'quantity'));
+        $unitBreakdown = array_values(array_map(function (array $entry) {
+            return [
+                'unit' => $entry['unit'],
+                'quantity' => round($entry['quantity'], 2),
+                'count' => $entry['count'],
+            ];
+        }, $grouped));
 
         return [
-            'quantity' => $totalQty,
-            'formatted' => number_format($totalQty) . ' kg',
+            'formatted' => number_format($totalItems) . ' items',
             'items_count' => $totalItems,
+            'total_quantity' => round((float) $totalQuantity, 2),
+            'by_unit' => $unitBreakdown,
         ];
     }
 
-    public function getMonthlyDonations(int $months = 12): array
+    public function getMonthlyDonations(int $months = 12, ?Carbon $anchorDate = null): array
     {
-        return Donation::select(
+        $anchor = ($anchorDate ? $anchorDate->copy() : now())->startOfMonth();
+        $start = $anchor->copy()->subMonths($months - 1);
+        $end = $anchor->copy()->endOfMonth();
+
+        $counts = Donation::select(
                 DB::raw('DATE_FORMAT(created_at, "%Y-%m") as month_key'),
                 DB::raw('COUNT(*) as count')
             )
-            ->where('created_at', '>=', now()->subMonths($months))
+            ->whereBetween('created_at', [$start, $end])
             ->groupBy('month_key')
             ->orderBy('month_key')
             ->pluck('count', 'month_key')
             ->toArray();
+
+        $out = [];
+        $cursor = $start->copy();
+        for ($i = 0; $i < $months; $i++) {
+            $key = $cursor->format('Y-m');
+            $out[$key] = (int) ($counts[$key] ?? 0);
+            $cursor->addMonth();
+        }
+
+        return $out;
     }
 
     public function getMonthlyCompletedDonations(int $months = 12): array
@@ -99,14 +176,17 @@ class AnalyticsService
             ->toArray();
     }
 
-    public function getUsersByRole(): array
+    public function getUsersByRole(?Carbon $start = null, ?Carbon $end = null): array
     {
-        return DB::table('role_user')
+        $query = DB::table('role_user')
+            ->join('users', 'users.id', '=', 'role_user.user_id')
             ->join('roles', 'roles.id', '=', 'role_user.role_id')
             ->select('roles.display_name', DB::raw('COUNT(*) as count'))
-            ->groupBy('roles.display_name')
-            ->pluck('count', 'display_name')
-            ->toArray();
+            ->groupBy('roles.display_name');
+
+        $this->applyDateRange($query, $start, $end, 'users.created_at');
+
+        return $query->pluck('count', 'display_name')->toArray();
     }
 
     public function getDonationsByStatus(): array
@@ -206,10 +286,11 @@ class AnalyticsService
     /**
      * @return array<string,int> month_key => amount_cents
      */
-    public function getMonthlySubscriptionRevenue(int $months = 12): array
+    public function getMonthlySubscriptionRevenue(int $months = 12, ?Carbon $anchorDate = null): array
     {
         $out = [];
-        $cursor = now()->startOfMonth()->subMonths($months - 1);
+        $anchor = ($anchorDate ? $anchorDate->copy() : now())->startOfMonth();
+        $cursor = $anchor->copy()->subMonths($months - 1);
         for ($i = 0; $i < $months; $i++) {
             $key = $cursor->format('Y-m');
             $out[$key] = (int) SubscriptionPayment::query()
@@ -224,9 +305,12 @@ class AnalyticsService
 
     public function getDashboardData(int $year, int $month): array
     {
-        $userStats = $this->getUserStats();
-        $donationStats = $this->getDonationStats();
-        $foodSaved = $this->getFoodSavedStats();
+        $periodStart = Carbon::createFromDate($year, $month, 1)->startOfMonth();
+        $periodEnd = $periodStart->copy()->endOfMonth();
+
+        $userStats = $this->getUserStats($periodStart, $periodEnd);
+        $donationStats = $this->getDonationStats($periodStart, $periodEnd);
+        $foodSaved = $this->getFoodSavedStats($periodStart, $periodEnd);
         $rev = $this->getSubscriptionRevenueSummary($year, $month);
 
         return [
@@ -234,20 +318,30 @@ class AnalyticsService
             'total_donations' => $donationStats['total'],
             'pending_approvals' => $userStats['pending'],
             'food_saved' => $foodSaved['formatted'],
-            'monthly_donations' => $this->getMonthlyDonations(),
-            'monthly_subscription_cents' => $this->getMonthlySubscriptionRevenue(),
-            'users_by_role' => $this->getUsersByRole(),
-            'donations_by_status' => $this->getDonationsByStatus(),
+            'food_saved_chart' => $foodSaved['by_unit'],
+            'food_saved_total_items' => $foodSaved['items_count'],
+            'monthly_donations' => $this->getMonthlyDonations(12, $periodStart),
+            'monthly_subscription_cents' => $this->getMonthlySubscriptionRevenue(12, $periodStart),
+            'users_by_role' => $this->getUsersByRole($periodStart, $periodEnd),
             'subscription_month_cents' => $rev['month_cents'],
             'subscription_total_cents' => $rev['total_cents'],
             'subscription_month_formatted' => $rev['month_formatted'],
             'subscription_total_formatted' => $rev['total_formatted'],
             'revenue_filter_year' => $year,
             'revenue_filter_month' => $month,
-            'pending_donations' => Donation::where('status', 'pending')->count(),
-            'accepted_donations' => Donation::where('status', 'accepted')->count(),
-            'open_assignments' => DonationAssignment::whereIn('status', ['pending', 'accepted', 'in_progress'])->count(),
+            'accepted_donations' => $donationStats['accepted'],
         ];
+    }
+
+    private function applyDateRange($query, ?Carbon $start, ?Carbon $end, string $column = 'created_at'): void
+    {
+        if ($start && $end) {
+            $query->whereBetween($column, [$start, $end]);
+        } elseif ($start) {
+            $query->where($column, '>=', $start);
+        } elseif ($end) {
+            $query->where($column, '<=', $end);
+        }
     }
 
     public function getReportsData(): array

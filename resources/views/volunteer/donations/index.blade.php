@@ -120,7 +120,7 @@
                     @if($donation->items && $donation->items->count() > 0)
                         @foreach($donation->items->take(3) as $item)
                             <span class="badge bg-light text-dark border me-1 mb-1">
-                                {{ $item->food_type }} <small class="text-muted">({{ $item->quantity }} {{ $item->quantity_unit }})</small>
+                                {{ $item->food_type }} <small class="text-muted">({{ $item->quantity }} {{ __('donations.' . ($item->quantity_unit ?? 'kg')) }})</small>
                             </span>
                         @endforeach
                         @if($donation->items->count() > 3)
@@ -213,7 +213,6 @@
                                 <div class="p-2 rounded bg-light">
                                     <small class="text-muted d-block">{{ __('Volunteers') }}</small>
                                     <strong id="modal-volunteers">-</strong>
-                                    <div class="small text-muted mt-1" id="modal-volunteer-types">-</div>
                                 </div>
                             </div>
                         </div>
@@ -280,6 +279,13 @@
         assigned: @json(__('Assigned')),
         noSlots: @json(__('No open slots for this type'))
     };
+    window.unitLabels = {
+        kg: @json(__('donations.kg')),
+        pieces: @json(__('donations.pieces')),
+        boxes: @json(__('donations.boxes')),
+        bags: @json(__('donations.bags')),
+        plates: @json(__('donations.plates'))
+    };
 
     // City -> Town dynamic filter
     $('#filter_city_id').on('change', function () {
@@ -324,6 +330,10 @@
     });
 
     function openModal(id) {
+        const getUnitLabel = function (unit) {
+            return (window.unitLabels && window.unitLabels[unit]) ? window.unitLabels[unit] : (unit || '');
+        };
+
         $.get(window.routes.donationsShow.replace(':id', id), function(data) {
             let m = $('#donationDetailModal');
             if (data.image) {
@@ -344,7 +354,7 @@
                 data.items.forEach(function(i) {
                     html += '<div class="d-flex justify-content-between border-bottom py-2">';
                     html += '<span><i class="fas fa-check-circle text-success me-1"></i> ' + i.food_type + '</span>';
-                    html += '<span class="badge bg-light text-dark border">' + i.quantity + ' ' + i.quantity_unit + '</span>';
+                    html += '<span class="badge bg-light text-dark border">' + i.quantity + ' ' + getUnitLabel(i.quantity_unit) + '</span>';
                     html += '</div>';
                 });
             } else {
@@ -357,10 +367,6 @@
             var delNeeded = data.delivery_volunteers_needed || 0;
             var pkgFilled = data.packaging_assignments_count || 0;
             var pkgNeeded = data.packaging_volunteers_needed || 0;
-            m.find('#modal-volunteer-types').html(
-                '<span class="badge bg-info me-1"><i class="fas fa-truck me-1"></i>' + delFilled + '/' + delNeeded + '</span>' +
-                '<span class="badge bg-secondary"><i class="fas fa-box me-1"></i>' + pkgFilled + '/' + pkgNeeded + '</span>'
-            );
             m.find('#modal-address').text(data.pickup_address || '-');
             m.find('#assign-donation-id').val(data.id);
 

@@ -28,4 +28,8 @@ return [
     'subscription_revenue' => 'Subscription revenue',
     'users_by_role' => 'Users by Role',
     'revenue_usd' => 'Revenue (USD)',
+    'saved_qty' => 'Saved',
+    'remaining_qty' => 'Remaining',
+    'unit_types' => 'Unit types',
+    'no_food_saved_data' => 'No food-saved data yet',
 ];

@@ -19,7 +19,6 @@
                         <th>{{ __('charity_management.donation') }} #</th>
                         <th>{{ __('donations.food_type') }}</th>
                         <th>{{ __('charity_management.donation_status') }}</th>
-                        <th>{{ __('charity_management.request') }}</th>
                         <th>{{ __('charity_management.message') }}</th>
                         <th>{{ __('charity_management.created_at') }}</th>
                     </tr>
@@ -39,7 +38,6 @@
             { data: 'donation_id', name: 'donation_id' },
             { data: 'donation_food', name: 'donation.food_type', orderable: false },
             { data: 'donation_status', name: 'donation.status' },
-            { data: 'status_badge', name: 'status', orderable: false, searchable: false },
             { data: 'message', name: 'message' },
             { data: 'created_at', name: 'created_at' },
         ]);

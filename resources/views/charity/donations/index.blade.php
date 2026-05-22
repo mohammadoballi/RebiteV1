@@ -106,7 +106,7 @@
                     @if($donation->items && $donation->items->count() > 0)
                         @foreach($donation->items->take(3) as $item)
                             <span class="badge bg-light text-dark border me-1 mb-1">
-                                {{ $item->food_type }} <small class="text-muted">({{ $item->quantity }} {{ $item->quantity_unit }})</small>
+                                {{ $item->food_type }} <small class="text-muted">({{ $item->quantity }} {{ __('donations.' . ($item->quantity_unit ?? 'kg')) }})</small>
                             </span>
                         @endforeach
                         @if($donation->items->count() > 3)
@@ -267,6 +267,13 @@
         donationsAccept: '{{ route("charity.donations.accept", ":id") }}'
     };
     window.requestedDonationIds = @json($requestedDonationIds);
+    window.unitLabels = {
+        kg: @json(__('donations.kg')),
+        pieces: @json(__('donations.pieces')),
+        boxes: @json(__('donations.boxes')),
+        bags: @json(__('donations.bags')),
+        plates: @json(__('donations.plates'))
+    };
 
     // City -> Town dynamic filter
     $('#filter_city_id').on('change', function () {
@@ -290,6 +297,10 @@
     });
 
     function openDonationModal(id) {
+        const getUnitLabel = function (unit) {
+            return (window.unitLabels && window.unitLabels[unit]) ? window.unitLabels[unit] : (unit || '');
+        };
+
         $.get(window.routes.donationsShow.replace(':id', id), function(data) {
             let modal = $('#donationDetailModal');
 
@@ -315,14 +326,14 @@
                 data.items.forEach(function(item) {
                     itemsHtml += '<div class="d-flex justify-content-between align-items-center border-bottom py-2">';
                     itemsHtml += '<span><i class="fas fa-check-circle text-success me-1"></i> ' + item.food_type + '</span>';
-                    itemsHtml += '<span class="badge bg-light text-dark border">' + item.quantity + ' ' + item.quantity_unit + '</span>';
+                    itemsHtml += '<span class="badge bg-light text-dark border">' + item.quantity + ' ' + getUnitLabel(item.quantity_unit) + '</span>';
                     itemsHtml += '</div>';
                     if (item.description) {
                         itemsHtml += '<small class="text-muted d-block mb-1 ps-4">' + item.description + '</small>';
                     }
                 });
             } else {
-                itemsHtml = '<span class="badge bg-light text-dark border">' + (data.food_type || '-') + ' — ' + (data.quantity || '') + ' ' + (data.quantity_unit || '') + '</span>';
+                itemsHtml = '<span class="badge bg-light text-dark border">' + (data.food_type || '-') + ' — ' + (data.quantity || '') + ' ' + getUnitLabel(data.quantity_unit || '') + '</span>';
             }
             modal.find('#modal-items-list').html(itemsHtml);
 

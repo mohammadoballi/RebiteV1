@@ -81,7 +81,7 @@
                     {{-- Donation Details --}}
                     <div class="row g-3">
                         <div class="col-md-8">
-                            <label for="pickup_address" class="form-label">{{ __('donations.pickup_address') }} <span class="text-danger">*</span></label>
+                            <label for="pickup_address" class="form-label">{{ __('Address') }} <span class="text-danger">*</span></label>
                             <textarea class="form-control" id="pickup_address" name="pickup_address" rows="2" required></textarea>
                         </div>
 
@@ -171,7 +171,7 @@
                         </div>
                     </div>
                     <div class="col-12">
-                        <small class="text-muted d-block">{{ __('donations.pickup_address') }}</small>
+                        <small class="text-muted d-block">{{ __('Address') }}</small>
                         <span id="view-address">-</span>
                     </div>
                     <div class="col-12" id="view-desc-wrap" style="display:none">
@@ -209,6 +209,13 @@
         donationsShow: '{{ route("donor.donations.show", ":id") }}',
         donationsUpdate: '{{ route("donor.donations.update", ":id") }}',
         donationsDestroy: '{{ route("donor.donations.destroy", ":id") }}'
+    };
+    window.unitLabels = {
+        kg: @json(__('donations.kg')),
+        pieces: @json(__('donations.pieces')),
+        boxes: @json(__('donations.boxes')),
+        bags: @json(__('donations.bags')),
+        plates: @json(__('donations.plates'))
     };
 </script>
 <script src="{{ asset('js/donor/donations.js') }}"></script>

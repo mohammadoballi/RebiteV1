@@ -3,32 +3,47 @@
  */
 let itemIndex = 0;
 
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function getUnitLabel(unit) {
+    const labels = window.unitLabels || {};
+    return labels[unit] || unit || '';
+}
+
 function getItemRowHtml(index, data) {
     data = data || {};
+    const selectedUnit = data.quantity_unit || 'kg';
     return `
     <div class="item-row border rounded p-3 mb-2 bg-light" data-index="${index}">
         <div class="row g-2 align-items-end">
             <div class="col-md-4">
                 <label class="form-label small mb-1">Food Type <span class="text-danger">*</span></label>
-                <input type="text" class="form-control form-control-sm" name="items[${index}][food_type]" value="${data.food_type || ''}" placeholder="e.g. Rice, Bread" required>
+                <input type="text" class="form-control form-control-sm" name="items[${index}][food_type]" value="${escapeHtml(data.food_type || '')}" placeholder="e.g. Rice, Bread" required>
             </div>
             <div class="col-md-2">
                 <label class="form-label small mb-1">Quantity <span class="text-danger">*</span></label>
-                <input type="text" class="form-control form-control-sm" name="items[${index}][quantity]" value="${data.quantity || ''}" placeholder="10" required>
+                <input type="number" class="form-control form-control-sm" name="items[${index}][quantity]" value="${escapeHtml(data.quantity || '')}" min="0.01" step="0.01" placeholder="10" required>
             </div>
             <div class="col-md-2">
                 <label class="form-label small mb-1">Unit</label>
                 <select class="form-select form-select-sm" name="items[${index}][quantity_unit]">
-                    <option value="kg" ${(data.quantity_unit === 'kg') ? 'selected' : ''}>Kg</option>
-                    <option value="pieces" ${(data.quantity_unit === 'pieces') ? 'selected' : ''}>Pieces</option>
-                    <option value="boxes" ${(data.quantity_unit === 'boxes') ? 'selected' : ''}>Boxes</option>
-                    <option value="bags" ${(data.quantity_unit === 'bags') ? 'selected' : ''}>Bags</option>
-                    <option value="plates" ${(data.quantity_unit === 'plates') ? 'selected' : ''}>Plates</option>
+                    <option value="kg" ${selectedUnit === 'kg' ? 'selected' : ''}>${escapeHtml(getUnitLabel('kg'))}</option>
+                    <option value="pieces" ${selectedUnit === 'pieces' ? 'selected' : ''}>${escapeHtml(getUnitLabel('pieces'))}</option>
+                    <option value="boxes" ${selectedUnit === 'boxes' ? 'selected' : ''}>${escapeHtml(getUnitLabel('boxes'))}</option>
+                    <option value="bags" ${selectedUnit === 'bags' ? 'selected' : ''}>${escapeHtml(getUnitLabel('bags'))}</option>
+                    <option value="plates" ${selectedUnit === 'plates' ? 'selected' : ''}>${escapeHtml(getUnitLabel('plates'))}</option>
                 </select>
             </div>
             <div class="col-md-3">
                 <label class="form-label small mb-1">Description</label>
-                <input type="text" class="form-control form-control-sm" name="items[${index}][description]" value="${data.description || ''}" placeholder="Optional">
+                <input type="text" class="form-control form-control-sm" name="items[${index}][description]" value="${escapeHtml(data.description || '')}" placeholder="Optional">
             </div>
             <div class="col-md-1 text-end">
                 <button type="button" class="btn btn-sm btn-outline-danger btn-remove-item" title="Remove">
@@ -52,6 +67,25 @@ function updateRemoveButtons() {
     } else {
         rows.find('.btn-remove-item').prop('disabled', false);
     }
+}
+
+function validateItemQuantities() {
+    let isValid = true;
+    $('.item-row input[name$="[quantity]"]').each(function () {
+        const parsed = Number($(this).val());
+        if (!Number.isFinite(parsed) || parsed <= 0) {
+            isValid = false;
+            $(this).addClass('is-invalid');
+        } else {
+            $(this).removeClass('is-invalid');
+        }
+    });
+
+    if (!isValid) {
+        Swal.fire({ icon: 'error', title: 'Validation Error', text: 'Quantity must be a positive number.' });
+    }
+
+    return isValid;
 }
 
 $(document).ready(function() {
@@ -128,6 +162,10 @@ $(document).ready(function() {
     // Save donation
     $(document).on('click', '#btn-save-donation', function(e) {
         e.preventDefault();
+        if (!validateItemQuantities()) {
+            return;
+        }
+
         let form = $('#donationForm');
         let action = form.attr('data-action');
         let formData = new FormData(form[0]);
@@ -190,11 +228,11 @@ $(document).ready(function() {
                 data.items.forEach(function(item) {
                     itemsHtml += '<div class="d-flex justify-content-between align-items-center border-bottom py-2">';
                     itemsHtml += '<span><i class="fas fa-check-circle text-success me-1"></i> ' + item.food_type + '</span>';
-                    itemsHtml += '<span class="badge bg-light text-dark border">' + item.quantity + ' ' + item.quantity_unit + '</span>';
+                    itemsHtml += '<span class="badge bg-light text-dark border">' + item.quantity + ' ' + getUnitLabel(item.quantity_unit) + '</span>';
                     itemsHtml += '</div>';
                 });
             } else {
-                itemsHtml = '<span>' + (data.food_type || '-') + ' — ' + (data.quantity || '') + ' ' + (data.quantity_unit || '') + '</span>';
+                itemsHtml = '<span>' + (data.food_type || '-') + ' — ' + (data.quantity || '') + ' ' + getUnitLabel(data.quantity_unit || '') + '</span>';
             }
             modal.find('#view-items-list').html(itemsHtml);
 

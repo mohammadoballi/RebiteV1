@@ -26,7 +26,7 @@ class StoreDonationRequest extends FormRequest
             'packaging_volunteers_needed' => ['required', 'integer', 'min:0', 'max:50'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.food_type' => ['required', 'string', 'max:255'],
-            'items.*.quantity' => ['required', 'string'],
+            'items.*.quantity' => ['required', 'numeric', 'gt:0'],
             'items.*.quantity_unit' => ['required', 'string', 'in:kg,pieces,boxes,bags,plates'],
             'items.*.description' => ['nullable', 'string', 'max:500'],
         ];

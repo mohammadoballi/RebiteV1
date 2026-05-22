@@ -42,7 +42,7 @@ class DonationItemAggregator
         }
 
         return $collection
-            ->map(fn (DonationItem|array $item) => self::formatLine(
+            ->map(fn (DonationItem|array $item) => self::formatDisplayLine(
                 $item instanceof DonationItem ? $item->only(['food_type', 'quantity', 'quantity_unit']) : $item
             ))
             ->implode(', ');
@@ -58,6 +58,27 @@ class DonationItemAggregator
         $unit = trim((string) ($item['quantity_unit'] ?? 'kg'));
 
         $amount = trim($quantity . ' ' . $unit);
+
+        if ($foodType !== '' && $amount !== '') {
+            return $foodType . ': ' . $amount;
+        }
+
+        return $foodType !== '' ? $foodType : $amount;
+    }
+
+    /**
+     * @param  array<string, mixed>  $item
+     */
+    public static function formatDisplayLine(array $item): string
+    {
+        $foodType = trim((string) ($item['food_type'] ?? ''));
+        $quantity = trim((string) ($item['quantity'] ?? ''));
+        $unit = trim((string) ($item['quantity_unit'] ?? 'kg'));
+        $translatedUnit = \Illuminate\Support\Facades\Lang::has('donations.' . $unit)
+            ? __('donations.' . $unit)
+            : $unit;
+
+        $amount = trim($quantity . ' ' . $translatedUnit);
 
         if ($foodType !== '' && $amount !== '') {
             return $foodType . ': ' . $amount;

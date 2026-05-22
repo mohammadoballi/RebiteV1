@@ -55,6 +55,13 @@
         myRequestsDatatable: '{{ route("charity.my-requests.datatable") }}',
         donationsShow: '{{ route("charity.donations.show", ":id") }}'
     };
+    window.unitLabels = {
+        kg: @json(__('donations.kg')),
+        pieces: @json(__('donations.pieces')),
+        boxes: @json(__('donations.boxes')),
+        bags: @json(__('donations.bags')),
+        plates: @json(__('donations.plates'))
+    };
 </script>
 <script src="{{ asset('js/charity/donations.js') }}"></script>
 @endpush

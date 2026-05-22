@@ -182,7 +182,15 @@ class Donation extends Model
             return '';
         }
 
-        return $unit !== '' && $unit !== 'mixed' ? $qty . ' ' . $unit : $qty;
+        if ($unit === '' || $unit === 'mixed') {
+            return $qty;
+        }
+
+        $translatedUnit = \Illuminate\Support\Facades\Lang::has('donations.' . $unit)
+            ? __('donations.' . $unit)
+            : $unit;
+
+        return $qty . ' ' . $translatedUnit;
     }
 
     // ── Scopes ──
