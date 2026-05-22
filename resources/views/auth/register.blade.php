@@ -506,15 +506,6 @@
                 {{-- Volunteer: Identification document + default role_type --}}
                 <div class="col-12 role-section" id="volunteer-fields" style="display:none;">
                     <div class="role-fields">
-                        <div class="mb-3">
-                            <label for="role_type" class="form-label">{{ __('auth_page.volunteer_type') }} <span class="text-danger">*</span></label>
-                            <select id="role_type" name="role_type" class="form-select @error('role_type') is-invalid @enderror" required>
-                                <option value="">{{ __('Select volunteer task') }}</option>
-                                <option value="delivery" {{ old('role_type', 'delivery') === 'delivery' ? 'selected' : '' }}>{{ __('auth_page.delivery') }}</option>
-                                <option value="packaging" {{ old('role_type') === 'packaging' ? 'selected' : '' }}>{{ __('auth_page.packaging') }}</option>
-                            </select>
-                            @error('role_type')<div class="invalid-feedback d-block">{{ $message }}</div>@enderror
-                        </div>
                         <label for="id_file" class="form-label">{{ __('auth_page.id_document') }} <span class="text-danger">*</span></label>
                         <input type="file" id="id_file" name="id_file"
                                class="form-control @error('id_file') is-invalid @enderror"
@@ -548,13 +539,10 @@
                 {{-- Address --}}
                 <div class="col-12">
                     <label for="address" class="form-label">{{ __('auth_page.address') }}</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="fas fa-location-dot"></i></span>
-                        <input type="text" id="address" name="address"
-                               class="form-control @error('address') is-invalid @enderror"
-                               value="{{ old('address') }}" placeholder="{{ __('auth_page.address') }}">
-                        @error('address')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                    </div>
+                    <input type="text" id="address" name="address"
+                           class="form-control @error('address') is-invalid @enderror"
+                           value="{{ old('address') }}" placeholder="{{ __('auth_page.address') }}">
+                    @error('address')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
 
                 {{-- Safety Guidelines Checkbox --}}

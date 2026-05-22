@@ -80,11 +80,6 @@
 
                     {{-- Donation Details --}}
                     <div class="row g-3">
-                        <div class="col-md-8">
-                            <label for="pickup_address" class="form-label">{{ __('Address') }} <span class="text-danger">*</span></label>
-                            <textarea class="form-control" id="pickup_address" name="pickup_address" rows="2" required></textarea>
-                        </div>
-
                         <div class="col-md-4">
                             <label class="form-label">{{ __('auth_page.delivery') }} {{ __('Volunteers') }} <span class="text-danger">*</span></label>
                             <div class="input-group">

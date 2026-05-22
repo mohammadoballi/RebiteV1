@@ -15,6 +15,7 @@ return [
     'available_donations' => 'Available Donations',
     'my_assignments' => 'My Assignments',
     'my_requests' => 'My Requests',
+    'my_orders' => 'My Orders',
     'year' => 'Year',
     'month' => 'Month',
     'apply' => 'Apply',

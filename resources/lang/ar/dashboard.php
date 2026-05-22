@@ -15,6 +15,7 @@ return [
     'available_donations' => 'التبرعات المتاحة',
     'my_assignments' => 'مهامي',
     'my_requests' => 'طلباتي',
+    'my_orders' => 'طلباتي',
     'year' => 'السنة',
     'month' => 'الشهر',
     'apply' => 'تطبيق',

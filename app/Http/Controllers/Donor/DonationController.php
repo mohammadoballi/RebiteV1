@@ -75,6 +75,7 @@ class DonationController extends Controller
         $data['user_id'] = $donor->id;
         $data['city_id'] = $donor->city_id;
         $data['town_id'] = $donor->town_id;
+        $data['pickup_address'] = trim((string) ($donor->address ?: $donor->city ?: __('Address not provided')));
 
         $donation = $this->donationService->create($data);
 

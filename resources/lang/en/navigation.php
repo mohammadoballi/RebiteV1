@@ -7,6 +7,7 @@ return [
     'my_donations' => 'My Donations',
     'available_donations' => 'Available Donations',
     'my_requests' => 'My Requests',
+    'my_orders' => 'My Orders',
     'subscription' => 'Subscription',
     'browse_donations' => 'Browse Donations',
     'my_assignments' => 'My Assignments',

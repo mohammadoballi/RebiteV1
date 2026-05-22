@@ -127,7 +127,7 @@
         </a>
         <a class="nav-link {{ request()->routeIs('charity.my-requests*') ? 'active' : '' }}"
            href="{{ route('charity.my-requests') }}">
-            <i class="fas fa-clipboard-list"></i> {{ __('navigation.my_requests') }}
+            <i class="fas fa-clipboard-list"></i> {{ __('navigation.my_orders') }}
         </a>
         <a class="nav-link {{ request()->routeIs('charity.subscription.*') ? 'active' : '' }}"
            href="{{ route('charity.subscription.index') }}">

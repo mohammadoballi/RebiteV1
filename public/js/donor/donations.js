@@ -147,7 +147,6 @@ $(document).ready(function() {
             }
 
             // Populate other fields
-            $('#donationForm [name="pickup_address"]').val(data.pickup_address);
             $('#donationForm [name="delivery_volunteers_needed"]').val(data.delivery_volunteers_needed ?? 1);
             $('#donationForm [name="packaging_volunteers_needed"]').val(data.packaging_volunteers_needed ?? 0);
             $('#donationForm [name="pickup_time"]').val(data.pickup_time ? data.pickup_time.substring(0, 16) : '');

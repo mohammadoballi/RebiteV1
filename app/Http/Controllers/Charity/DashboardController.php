@@ -15,8 +15,6 @@ class DashboardController extends Controller
         $stats = [
             'available' => Donation::available()->count(),
             'my_requests' => DonationRequest::where('charity_id', $charityId)->count(),
-            'approved_requests' => DonationRequest::where('charity_id', $charityId)
-                ->where('status', 'approved')->count(),
         ];
 
         $recentRequests = DonationRequest::where('charity_id', $charityId)
@@ -28,7 +26,6 @@ class DashboardController extends Controller
         return view('charity.dashboard', [
             'availableDonations' => $stats['available'],
             'myRequestsCount' => $stats['my_requests'],
-            'approvedRequests' => $stats['approved_requests'],
             'recentRequests' => $recentRequests,
         ]);
     }

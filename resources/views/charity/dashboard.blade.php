@@ -22,7 +22,7 @@
 
 {{-- Stat Cards --}}
 <div class="row g-3 mb-4">
-    <div class="col-sm-6 col-xl-4">
+    <div class="col-sm-6 col-xl-6">
         <div class="card h-100">
             <div class="card-body d-flex align-items-center">
                 <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
@@ -36,7 +36,7 @@
         </div>
     </div>
 
-    <div class="col-sm-6 col-xl-4">
+    <div class="col-sm-6 col-xl-6">
         <div class="card h-100">
             <div class="card-body d-flex align-items-center">
                 <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
@@ -44,31 +44,18 @@
                 </div>
                 <div>
                     <h3 class="mb-0">{{ $myRequestsCount ?? 0 }}</h3>
-                    <small class="text-muted">{{ __('dashboard.my_requests') }}</small>
+                    <small class="text-muted">{{ __('dashboard.my_orders') }}</small>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="col-sm-6 col-xl-4">
-        <div class="card h-100">
-            <div class="card-body d-flex align-items-center">
-                <div class="rounded-circle bg-info bg-opacity-10 p-3 me-3">
-                    <i class="fas fa-check fa-lg text-info"></i>
-                </div>
-                <div>
-                    <h3 class="mb-0">{{ $approvedRequests ?? 0 }}</h3>
-                    <small class="text-muted">{{ __('general.approved') }}</small>
-                </div>
-            </div>
-        </div>
-    </div>
 </div>
 
-{{-- Recent Requests --}}
+{{-- Recent Orders --}}
 <div class="card">
     <div class="card-header bg-white d-flex justify-content-between align-items-center">
-        <h6 class="mb-0"><i class="fas fa-history me-2"></i>{{ __('dashboard.my_requests') }}</h6>
+        <h6 class="mb-0"><i class="fas fa-history me-2"></i>{{ __('dashboard.my_orders') }}</h6>
         <a href="{{ route('charity.my-requests') }}" class="btn btn-sm btn-outline-primary">
             {{ __('general.view') }} {{ __('general.actions') }}
         </a>

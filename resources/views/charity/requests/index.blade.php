@@ -1,10 +1,10 @@
 @extends('layouts.charity')
 
-@section('title', __('dashboard.my_requests'))
+@section('title', __('dashboard.my_orders'))
 
 @section('content')
 <div class="page-header d-flex justify-content-between align-items-center">
-    <h1><i class="fas fa-clipboard-list me-2"></i>{{ __('dashboard.my_requests') }}</h1>
+    <h1><i class="fas fa-clipboard-list me-2"></i>{{ __('dashboard.my_orders') }}</h1>
 </div>
 
 <div class="card">

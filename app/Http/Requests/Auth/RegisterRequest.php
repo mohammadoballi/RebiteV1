@@ -19,7 +19,7 @@ class RegisterRequest extends FormRequest
             'password'             => ['required', 'confirmed', 'min:8', 'regex:/^(?=.*[A-Z])(?=.*\d).+$/'],
             'phone'                => ['required', 'string'],
             'role'                 => ['required', 'in:donor,charity,volunteer'],
-            'role_type'            => ['required_if:role,volunteer', 'nullable', 'in:delivery,packaging'],
+            'role_type'            => ['nullable', 'in:delivery,packaging'],
             'commercial_registration_certificate' => ['required_if:role,donor', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
             'health_certificate'   => ['required_if:role,donor', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
             'id_file'              => ['required_if:role,volunteer', 'file', 'mimes:pdf,jpg,png', 'max:5120'],

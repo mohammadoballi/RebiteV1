@@ -211,7 +211,6 @@ class Donation extends Model
     public function scopeAvailable($query)
     {
         return $query->where('status', self::STATUS_PENDING)
-            ->whereNotNull('admin_approved_at')
             ->whereNull('accepted_charity_id')
             ->whereDoesntHave('requests', fn ($q) => $q->where('status', DonationRequest::STATUS_APPROVED))
             ->where(function ($q) {
