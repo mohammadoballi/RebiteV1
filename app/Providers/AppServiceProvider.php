@@ -5,7 +5,9 @@ namespace App\Providers;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
-
+use Stripe\Stripe;
+use Stripe\HttpClient\CurlClient;
+use Stripe\ApiRequestor;
 class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
@@ -21,5 +23,14 @@ class AppServiceProvider extends ServiceProvider
     {
         Schema::defaultStringLength(191);
         Paginator::useBootstrapFive();
+        if (app()->environment('local')) {
+
+          Stripe::setVerifySslCerts(false);
+  
+          $curl = new CurlClient();
+          $curl->setEnableHttp2(false);
+  
+          ApiRequestor::setHttpClient($curl);
+      }
     }
 }
