@@ -6,6 +6,14 @@ $(document).ready(function() {
         const labels = window.unitLabels || {};
         return labels[unit] || unit || '';
     };
+    const renderStars = function (rating) {
+        var value = Math.max(0, Math.min(5, Number(rating) || 0));
+        var html = '';
+        for (var i = 1; i <= 5; i++) {
+            html += '<i class="fas fa-star ' + (i <= value ? 'text-warning' : 'text-muted') + '"></i>';
+        }
+        return html;
+    };
 
     let assignmentsTable = initDataTable('assignments-table', window.routes.assignmentsDatatable, [
         { data: 'id', name: 'id' },
@@ -37,6 +45,20 @@ $(document).ready(function() {
             modal.find('#assign-delivered-at').text(data.delivered_at || '-');
             modal.find('#assign-notes').text(data.notes || '-');
             modal.find('#current-assignment-id').val(data.id);
+
+            if (data.charity_rating) {
+                var ratingHtml = '<div class="d-flex justify-content-between align-items-center">';
+                ratingHtml += '<strong>' + (data.charity_rating.rater ? data.charity_rating.rater.name : 'Charity') + '</strong>';
+                ratingHtml += '<span>' + renderStars(data.charity_rating.rating) + '</span>';
+                ratingHtml += '</div>';
+                if (data.charity_rating.comment) {
+                    ratingHtml += '<small class="text-muted d-block mt-1">' + data.charity_rating.comment + '</small>';
+                }
+                modal.find('#assign-charity-rating-box').html(ratingHtml);
+                modal.find('#assign-charity-rating-section').show();
+            } else {
+                modal.find('#assign-charity-rating-section').hide();
+            }
 
             // Show/hide action buttons based on status
             modal.find('.action-buttons button').hide();

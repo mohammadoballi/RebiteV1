@@ -94,6 +94,15 @@
                         <label class="form-label text-muted small mb-0">{{ __('donations.notes') }}</label>
                         <p class="fw-semibold mb-2" id="donation-notes">-</p>
                     </div>
+                    <div class="col-12" id="donation-ratings-row" style="display:none">
+                        <hr>
+                        <label class="form-label text-muted small mb-1">{{ __('Donation Ratings') }}</label>
+                        <div id="donation-ratings-list"></div>
+                    </div>
+                    <div class="col-12" id="donor-ratings-row" style="display:none">
+                        <label class="form-label text-muted small mb-1">{{ __('Donor Ratings') }}</label>
+                        <div id="donor-ratings-list"></div>
+                    </div>
                     <div class="col-12" id="donation-image-row" style="display:none">
                         <label class="form-label text-muted small mb-0">{{ __('donations.image') }}</label>
                         <div>

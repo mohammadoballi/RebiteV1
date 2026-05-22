@@ -7,6 +7,8 @@ use App\Http\Requests\Donation\StoreDonationRequest;
 use App\Http\Requests\Donation\UpdateDonationRequest;
 use App\Models\Donation;
 use App\Models\FoodCategory;
+use App\Models\Rating;
+use App\Models\User;
 use App\Services\DonationService;
 use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
@@ -94,8 +96,19 @@ class DonationController extends Controller
     public function show(int $id): JsonResponse
     {
         $donation = Donation::where('user_id', auth()->id())
-            ->with(['items', 'requests.charity', 'assignments.volunteer', 'cityRelation:id,name', 'town:id,name', 'foodCategory.parent:id,name'])
+            ->with(['items', 'requests.charity', 'assignments.volunteer', 'cityRelation:id,name', 'town:id,name', 'foodCategory.parent:id,name', 'acceptedCharity:id,name'])
             ->findOrFail($id);
+
+        $charityRatings = Rating::query()
+            ->with('rater:id,name')
+            ->where('donation_id', $donation->id)
+            ->where('rateable_type', User::class)
+            ->where('rateable_id', $donation->user_id)
+            ->when($donation->accepted_charity_id, fn ($q) => $q->where('rater_id', $donation->accepted_charity_id))
+            ->latest()
+            ->get();
+
+        $donation->setAttribute('charity_ratings', $charityRatings);
 
         return response()->json($donation);
     }

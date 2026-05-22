@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Volunteer;
 
 use App\Http\Controllers\Controller;
 use App\Models\DonationAssignment;
+use App\Models\Rating;
+use App\Models\User;
 use App\Services\AssignmentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -49,6 +51,17 @@ class AssignmentController extends Controller
         $assignment = DonationAssignment::where('volunteer_id', auth()->id())
             ->with(['donation.donor', 'donation.cityRelation:id,name', 'donation.town:id,name', 'donation.foodCategory.parent:id,name', 'donationRequest.charity'])
             ->findOrFail($id);
+
+        $charityRating = Rating::query()
+            ->with('rater:id,name')
+            ->where('donation_id', $assignment->donation_id)
+            ->where('rateable_type', User::class)
+            ->where('rateable_id', (int) auth()->id())
+            ->when($assignment->donation?->accepted_charity_id, fn ($q) => $q->where('rater_id', $assignment->donation->accepted_charity_id))
+            ->latest()
+            ->first();
+
+        $assignment->setAttribute('charity_rating', $charityRating);
 
         return response()->json($assignment);
     }

@@ -6,6 +6,14 @@ $(document).ready(function() {
         const labels = window.unitLabels || {};
         return labels[unit] || unit || '';
     };
+    const renderStars = function (rating) {
+        var value = Math.max(0, Math.min(5, Number(rating) || 0));
+        var html = '';
+        for (var i = 1; i <= 5; i++) {
+            html += '<i class="fas fa-star ' + (i <= value ? 'text-warning' : 'text-muted') + '"></i>';
+        }
+        return html;
+    };
 
     const params = new URLSearchParams(window.location.search);
     const initialStatus = params.get('status') || '';
@@ -76,6 +84,45 @@ $(document).ready(function() {
                 modal.find('#donation-image').attr('src', '/storage/' + data.image);
             } else {
                 modal.find('#donation-image-row').hide();
+            }
+
+            if (data.donation_ratings && data.donation_ratings.length > 0) {
+                var donationRatingsHtml = '';
+                data.donation_ratings.forEach(function (rating) {
+                    var rateableName = rating.rateable ? rating.rateable.name : 'User';
+                    donationRatingsHtml += '<div class="border rounded p-2 mb-2 bg-light">';
+                    donationRatingsHtml += '<div class="d-flex justify-content-between align-items-center">';
+                    donationRatingsHtml += '<span><strong>' + (rating.rater ? rating.rater.name : 'Unknown') + '</strong> → ' + rateableName + '</span>';
+                    donationRatingsHtml += '<span>' + renderStars(rating.rating) + '</span>';
+                    donationRatingsHtml += '</div>';
+                    if (rating.comment) {
+                        donationRatingsHtml += '<small class="text-muted d-block mt-1">' + rating.comment + '</small>';
+                    }
+                    donationRatingsHtml += '</div>';
+                });
+                modal.find('#donation-ratings-list').html(donationRatingsHtml);
+                modal.find('#donation-ratings-row').show();
+            } else {
+                modal.find('#donation-ratings-row').hide();
+            }
+
+            if (data.donor_ratings && data.donor_ratings.length > 0) {
+                var donorRatingsHtml = '';
+                data.donor_ratings.forEach(function (rating) {
+                    donorRatingsHtml += '<div class="border rounded p-2 mb-2 bg-light">';
+                    donorRatingsHtml += '<div class="d-flex justify-content-between align-items-center">';
+                    donorRatingsHtml += '<span><strong>' + (rating.rater ? rating.rater.name : 'Unknown') + '</strong></span>';
+                    donorRatingsHtml += '<span>' + renderStars(rating.rating) + '</span>';
+                    donorRatingsHtml += '</div>';
+                    if (rating.comment) {
+                        donorRatingsHtml += '<small class="text-muted d-block mt-1">' + rating.comment + '</small>';
+                    }
+                    donorRatingsHtml += '</div>';
+                });
+                modal.find('#donor-ratings-list').html(donorRatingsHtml);
+                modal.find('#donor-ratings-row').show();
+            } else {
+                modal.find('#donor-ratings-row').hide();
             }
 
             modal.modal('show');

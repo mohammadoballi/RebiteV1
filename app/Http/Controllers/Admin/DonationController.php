@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Donation;
+use App\Models\Rating;
+use App\Models\User;
 use App\Services\DonationService;
 use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
@@ -57,6 +59,24 @@ class DonationController extends Controller
             'foodCategory.parent:id,name',
         ])
             ->findOrFail($id);
+
+        $donationRatings = Rating::query()
+            ->with(['rater:id,name', 'rateable'])
+            ->where('donation_id', $donation->id)
+            ->where('rateable_type', User::class)
+            ->latest()
+            ->get();
+
+        $donorRatings = Rating::query()
+            ->with('rater:id,name')
+            ->where('rateable_type', User::class)
+            ->where('rateable_id', $donation->user_id)
+            ->latest()
+            ->limit(20)
+            ->get();
+
+        $donation->setAttribute('donation_ratings', $donationRatings);
+        $donation->setAttribute('donor_ratings', $donorRatings);
 
         return response()->json($donation);
     }

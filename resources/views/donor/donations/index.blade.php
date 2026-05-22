@@ -185,6 +185,11 @@
                         <h6 class="fw-bold"><i class="fas fa-users me-1 text-success"></i> {{ __('Assigned Volunteers') }}</h6>
                         <div id="view-volunteers-list"></div>
                     </div>
+                    <div class="col-12" id="view-charity-ratings-section" style="display:none">
+                        <hr>
+                        <h6 class="fw-bold"><i class="fas fa-star me-1 text-warning"></i> {{ __('Charity Rating') }}</h6>
+                        <div id="view-charity-ratings-list"></div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">

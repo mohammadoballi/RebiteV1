@@ -65,6 +65,10 @@
             <label class="form-label fw-semibold text-muted">{{ __('Notes') }}</label>
             <p class="mb-0" id="assign-notes">-</p>
         </div>
+        <div class="col-md-12" id="assign-charity-rating-section" style="display:none;">
+            <label class="form-label fw-semibold text-muted">{{ __('Rating from Charity') }}</label>
+            <div id="assign-charity-rating-box" class="border rounded p-2 bg-light"></div>
+        </div>
     </div>
 
     <hr>

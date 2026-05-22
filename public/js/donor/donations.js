@@ -17,6 +17,15 @@ function getUnitLabel(unit) {
     return labels[unit] || unit || '';
 }
 
+function renderStars(rating) {
+    const rounded = Math.max(0, Math.min(5, Number(rating) || 0));
+    let html = '';
+    for (let i = 1; i <= 5; i++) {
+        html += '<i class="fas fa-star ' + (i <= rounded ? 'text-warning' : 'text-muted') + '"></i>';
+    }
+    return html;
+}
+
 function getItemRowHtml(index, data) {
     data = data || {};
     const selectedUnit = data.quantity_unit || 'kg';
@@ -282,6 +291,25 @@ $(document).ready(function() {
                 modal.find('#view-volunteers-section').show();
             } else {
                 modal.find('#view-volunteers-section').hide();
+            }
+
+            if (data.charity_ratings && data.charity_ratings.length > 0) {
+                let ratingsHtml = '';
+                data.charity_ratings.forEach(function(r) {
+                    ratingsHtml += '<div class="border rounded p-2 mb-2 bg-light">';
+                    ratingsHtml += '<div class="d-flex justify-content-between align-items-center">';
+                    ratingsHtml += '<strong>' + (r.rater ? r.rater.name : 'Charity') + '</strong>';
+                    ratingsHtml += '<span>' + renderStars(r.rating) + '</span>';
+                    ratingsHtml += '</div>';
+                    if (r.comment) {
+                        ratingsHtml += '<small class="text-muted d-block mt-1">' + escapeHtml(r.comment) + '</small>';
+                    }
+                    ratingsHtml += '</div>';
+                });
+                modal.find('#view-charity-ratings-list').html(ratingsHtml);
+                modal.find('#view-charity-ratings-section').show();
+            } else {
+                modal.find('#view-charity-ratings-section').hide();
             }
 
             modal.modal('show');
